@@ -39,10 +39,10 @@ classdef Transformation < handle
                 
             if isa(external, 'imf.Force')                
                 force = Tr * external.force.value;
-                forceApplicationPoint = Tt * [external.forceApplicationPoint.value; 1];
+                pointOfApplication = Tt * [external.pointOfApplication.value; 1];
                 coordinateSystem = obj.to;
                 
-                texternal = imf.Force(force, forceApplicationPoint(1:3), coordinateSystem);
+                texternal = imf.Force(force, pointOfApplication(1:3), coordinateSystem);
             elseif isa(external, 'imf.Mass')                
                 mass = external.mass;
                 point = Tt * [external.point.value; 1];

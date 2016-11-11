@@ -50,6 +50,8 @@ classdef Model < handle
                     imasses(end+1) = obj.masses(i);
                 end
             end
+            
+            
         end
         
         function Add(obj, external)

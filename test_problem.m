@@ -8,6 +8,8 @@ r1 = [0.6 0.6 0]';
 r2 = [0 0 0.1]';
 r3 = [0 0.1 0]';
 m1 = 0.1;
+M1 = [0 0 1];
+I1 = eye(3);
 
 %%
 if ~exist('BEGIN_IMF','file'),
@@ -44,6 +46,8 @@ m = imf.Model();
 m.gravity = g;
 m.Add(imf.Force([1 2 3]', [1,0,0]', c3));
 m.Add(imf.Mass(m1, [1,0,0]', c3));
+m.Add(imf.Moment(M1, [1,0,0]', c3));
+m.Add(imf.Inertia(I1, [1,0,0]', c3));
 
 %%
 m.Compile(c1);

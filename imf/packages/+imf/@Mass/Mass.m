@@ -15,7 +15,7 @@ classdef Mass < handle
                 obj.mass = mass;
             else
                 error('The mass must be an numeric scalar');
-            end            
+            end
             
             if isvector(point)
                 obj.point = imf.Vector(point);
