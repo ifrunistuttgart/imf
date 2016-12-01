@@ -10,9 +10,9 @@ classdef Inertia
     
     methods
         function obj = Inertia(inertia, pointOfApplication, coordinateSystem)
-            if isvector(inertia)
+            if ismatrix(inertia)
                 obj.inertia = imf.Vector(inertia);
-            elseif isa(force, 'imf.Vector')
+            elseif isa(inertia, 'imf.Vector')
                 obj.inertia = inertia;
             else
                 error('The inertia must be either an numeric or symbolic matrix or an imf.Vector');
