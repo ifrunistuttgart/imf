@@ -25,7 +25,9 @@ classdef Model < handle
                 
         end
         
-        function Compile(obj, refSys)
+        function ode = Compile(obj, refSys)
+            
+            ode = 0;
             
             if nargin < 2
                 error('Please provide the inertial coordinate system.');
@@ -35,9 +37,9 @@ classdef Model < handle
             for i=1:length(obj.forces)
                 if obj.forces(i).coordinateSystem ~= refSys
                     T = getTransformation(obj.forces(i).coordinateSystem, refSys);
-                    iforces(end+1) = T.Transform(obj.forces(i));
+                    iforces(i) = T.Transform(obj.forces(i));
                 else
-                    iforces(end+1) = obj.forces(i);
+                    iforces(i) = obj.forces(i);
                 end
             end
             
@@ -45,12 +47,15 @@ classdef Model < handle
             for i=1:length(obj.masses)
                 if obj.masses(i).coordinateSystem ~= refSys
                     T = getTransformation(obj.masses(i).coordinateSystem, refSys);
-                    imasses(end+1) = T.Transform(obj.masses(i));
+                    imasses(i) = T.Transform(obj.masses(i));
                 else
-                    imasses(end+1) = obj.masses(i);
+                    imasses(i) = obj.masses(i);
                 end
+                
+                ode = ode + imasses(i)*jacobian(imasses(i).point.value)'*imasses(i).point;
             end
             
+            % TODO: Intertia, Moments
             
         end
         

@@ -1,10 +1,10 @@
-classdef GeneralizedCoordinate < imf.Variable
+classdef DifferentialState < imf.Variable
     properties(SetAccess='private')
         
     end
     
     methods
-        function obj = GeneralizedCoordinate(name)
+        function obj = DifferentialState(name)
             if nargin > 0
                 global IMF_;
                 
@@ -12,7 +12,7 @@ classdef GeneralizedCoordinate < imf.Variable
                     error( 'ERROR: The variable name you have set is not a valid matlab variable name. A valid variable name is a character string of letters, digits, and underscores, totaling not more than namelengthmax characters and beginning with a letter.' );
                 end
                 
-                obj.name = name;
+                obj.name = name;                
             end
         end
         
@@ -36,3 +36,4 @@ classdef GeneralizedCoordinate < imf.Variable
     end
     
 end
+
