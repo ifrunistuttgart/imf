@@ -23,9 +23,9 @@ GeneralizedCoordinate q1
 CoordinateSystem I
 
 %%
-m = imf.Model();
+m = imf.Model(I);
 m.gravity = g;
 m.Add(imf.Mass(m1, [sin(q1)*l,-cos(q1)*l,0]', I));
 
 %%
-m.Compile(I);
+model = m.Compile();

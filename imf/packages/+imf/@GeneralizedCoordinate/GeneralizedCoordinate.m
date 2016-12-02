@@ -13,6 +13,7 @@ classdef GeneralizedCoordinate < imf.Variable
                 end
                 
                 obj.name = name;
+                IMF_.helper.addX(obj);
             end
         end
         
@@ -26,7 +27,7 @@ classdef GeneralizedCoordinate < imf.Variable
                 for i = 1:length(var)
                     var(i) = getExpression(var(i));
                     if isa(var(i), 'imf.Variable')
-                        jac(j,i) = imf.DoubleConstant(double(isa(var(i), 'imf.DifferentialState') && strcmp(obj(j).name, var(i).name)));
+                        jac(j,i) = imf.DoubleConstant(double(isa(var(i), 'imf.GeneralizedCoordinate') && strcmp(obj(j).name, var(i).name)));
                     else
                         error('A jacobian can only be computed with respect to a variable.');
                     end

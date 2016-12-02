@@ -3,26 +3,26 @@ classdef Inertia
     %   Detailed explanation goes here
     
     properties
-        inertia@imf.Vector
-        pointOfApplication@imf.Vector
+        value@imf.Vector
+        positionVector@imf.Vector
         coordinateSystem@imf.CoordinateSystem
     end
     
     methods
-        function obj = Inertia(inertia, pointOfApplication, coordinateSystem)
-            if ismatrix(inertia)
-                obj.inertia = imf.Vector(inertia);
+        function obj = Inertia(value, positionVector, coordinateSystem)
+            if ismatrix(value)
+                obj.value = imf.Vector(value);
             elseif isa(inertia, 'imf.Vector')
-                obj.inertia = inertia;
+                obj.value = value;
             else
                 error('The inertia must be either an numeric or symbolic matrix or an imf.Vector');
             end
             
             
-            if isvector(pointOfApplication)
-                obj.pointOfApplication = imf.Vector(pointOfApplication);
-            elseif isa(pointOfApplication, 'imf.Vector')
-                obj.pointOfApplication = pointOfApplication;
+            if isvector(positionVector)
+                obj.positionVector = imf.Vector(positionVector);
+            elseif isa(positionVector, 'imf.Vector')
+                obj.positionVector = positionVector;
             else
                 error('The pointOfApplication must be either an numeric vector or an imf.Vector');
             end

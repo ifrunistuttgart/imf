@@ -1,10 +1,10 @@
-classdef Dot < imf.Expression
+classdef Ddot < imf.Expression
     properties(SetAccess='private')
         obj1;
     end
     
     methods
-        function obj = Dot(obj1)
+        function obj = Ddot(obj1)
             if nargin > 0
                 obj.obj1 = obj1;
                 global IMF_;
@@ -19,7 +19,7 @@ classdef Dot < imf.Expression
         end
         
         function s = toString(obj)
-            s = sprintf('dot(%s)', obj.obj1.toString);
+            s = sprintf('ddot(%s)', obj.obj1.toString);
         end
         
         function jac = jacobian(obj, var)

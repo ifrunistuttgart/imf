@@ -8,7 +8,7 @@ classdef Vector < imf.VectorspaceElement
             if nargin > 0
 	            global IMF_;
 
-                if (isa(val, 'numeric'))
+                if (isa(val, 'numeric') || isa(val, 'imf.Expression'))
 	                IMF_.count_vector = IMF_.count_vector+1;
 	                obj.name = strcat('imfdata_v', num2str(IMF_.count_vector));
                 

@@ -3,26 +3,26 @@ classdef Force
     %   Detailed explanation goes here
     
     properties
-        force@imf.Vector
-        pointOfApplication@imf.Vector
+        value@imf.Vector
+        positionVector@imf.Vector
         coordinateSystem@imf.CoordinateSystem
     end
     
     methods
-        function obj = Force(force, pointOfApplication, coordinateSystem)
-            if isvector(force)
-                obj.force = imf.Vector(force);
-            elseif isa(force, 'imf.Vector')
-                obj.force = force;
+        function obj = Force(value, positionVector, coordinateSystem)
+            if isvector(value)
+                obj.value = imf.Vector(value);
+            elseif isa(value, 'imf.Vector')
+                obj.value = value;
             else
                 error('The force must be either an numeric or symbolic vector or an imf.Vector');
             end
             
             
-            if isvector(pointOfApplication)
-                obj.pointOfApplication = imf.Vector(pointOfApplication);
-            elseif isa(pointOfApplication, 'imf.Vector')
-                obj.pointOfApplication = pointOfApplication;
+            if isvector(positionVector)
+                obj.positionVector = imf.Vector(positionVector);
+            elseif isa(positionVector, 'imf.Vector')
+                obj.positionVector = positionVector;
             else
                 error('The pointOfApplication must be either an numeric vector or an imf.Vector');
             end

@@ -33,11 +33,11 @@ classdef Model < handle
             
         end
         
-        function system = Compile(obj)
+        function ode = Compile(obj)
             
             gc = genCoordinates;
             
-            system = imf.Expression.empty(3,0);
+            
             
             for i=1:length(obj.masses)
                 m = obj.masses(i);
@@ -45,11 +45,7 @@ classdef Model < handle
                 dr = functionalDerivative(m.positionVector.items, gc);
                 ddr = functionalDerivative(dr, gc);
                 
-                if isempty(system)
-                    system = m.value*jac*ddr;
-                else
-                    system = system + m.value*jac*ddr;
-                end
+                ode = ode + m.value*jac*ddr;
             end
         end
         

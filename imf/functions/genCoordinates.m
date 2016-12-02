@@ -1,5 +1,3 @@
-function getInstructions(obj, cppobj, get)
-%Used to generate CPP file
 %
 %  Licence:
 %    This file is part of ACADO Toolkit  - (http://www.acadotoolkit.org/)
@@ -23,13 +21,14 @@ function getInstructions(obj, cppobj, get)
 %    License along with ACADO Toolkit; if not, write to the Free Software
 %    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 %
-%    Author: David Ariens
-%    Date: 2010
-% 
+%    Author: Rien Quirynen
+%    Date: 2012
 
+function out = genCoordinates()
 
-if (get == 'FB')
-    fprintf(cppobj.fileMEX,sprintf('    DifferentialState %s;\n', obj.name));
-end
-
+    global IMF_;
+    out = [];
+    for i = 1:numel(IMF_.helper.x)
+       out = [out; IMF_.helper.x{i}];
+    end
 end

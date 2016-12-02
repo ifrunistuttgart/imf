@@ -16,7 +16,7 @@ classdef Expression < handle
                 for i = 1:size(in,1)
                     for j = 1:size(in,2)
                         if isa(in(i,j), 'numeric')
-                            obj(i,j).expr = imf.DoubleConstant(in(i,j)); 
+                            obj(i,j).expr = imf.DoubleConstant(in(i,j));
                         else
                             obj(i,j).expr = in(i,j).getExpression;
                         end
@@ -37,6 +37,14 @@ classdef Expression < handle
             for i = 1:size(obj1,1)
                 for j = 1:size(obj1,2)
                     r(i,j) = imf.Dot(obj1(i,j));
+                end
+            end
+        end
+        
+        function r = ddot(obj1, b, dim)
+            for i = 1:size(obj1,1)
+                for j = 1:size(obj1,2)
+                    r(i,j) = imf.Ddot(obj1(i,j));
                 end
             end
         end
@@ -360,7 +368,7 @@ classdef Expression < handle
         
         function s = toString(obj)
             if ~isempty(obj.expr)
-                s = obj.expr.toString; 
+                s = obj.expr.toString;
             else
                 s = obj.name;
             end
@@ -542,35 +550,35 @@ classdef Expression < handle
         end
         
         function out = simplifyOne(obj)
-           if length(obj) ~= 1
-              error('Unsupported use of the function simplifyOne !'); 
-           end
-           changed = 1;
-           while(changed && ~obj.singleTerm)
-               prevString = toString(obj);
-               
-               while isa(obj, 'imf.MultiOperator') && length(obj.objs) == 1 && ~obj.contra
-                   obj = obj.objs{1};
-               end
-               obj = simplifyLocally(obj);
-               if isa(obj, 'imf.UnaryOperator')
-                   obj.obj1 = simplifyOne(obj.obj1);
-                   
-               elseif isa(obj, 'imf.BinaryOperator')
-                   obj.obj1 = simplifyOne(obj.obj1);
-                   obj.obj2 = simplifyOne(obj.obj2);
-                   
-               elseif isa(obj, 'imf.MultiOperator')
-                   for k = 1:length(obj.objs)
-                       obj.objs{k} = simplifyOne(obj.objs{k});
-                   end
-               elseif strcmp(class(obj), 'imf.Expression') || isa(obj, 'imf.IntermediateState')
-                   obj.expr = simplifyOne(obj.expr);
-               end
-               
-               changed = ~strcmp(toString(obj), prevString);
-           end
-           out = obj;
+            if length(obj) ~= 1
+                error('Unsupported use of the function simplifyOne !');
+            end
+            changed = 1;
+            while(changed && ~obj.singleTerm)
+                prevString = toString(obj);
+                
+                while isa(obj, 'imf.MultiOperator') && length(obj.objs) == 1 && ~obj.contra
+                    obj = obj.objs{1};
+                end
+                obj = simplifyLocally(obj);
+                if isa(obj, 'imf.UnaryOperator')
+                    obj.obj1 = simplifyOne(obj.obj1);
+                    
+                elseif isa(obj, 'imf.BinaryOperator')
+                    obj.obj1 = simplifyOne(obj.obj1);
+                    obj.obj2 = simplifyOne(obj.obj2);
+                    
+                elseif isa(obj, 'imf.MultiOperator')
+                    for k = 1:length(obj.objs)
+                        obj.objs{k} = simplifyOne(obj.objs{k});
+                    end
+                elseif strcmp(class(obj), 'imf.Expression') || isa(obj, 'imf.IntermediateState')
+                    obj.expr = simplifyOne(obj.expr);
+                end
+                
+                changed = ~strcmp(toString(obj), prevString);
+            end
+            out = obj;
         end
         
         function out = simplifyLocally(obj)
@@ -635,6 +643,38 @@ classdef Expression < handle
             else
                 error('Unsupported use of the eval function.');
             end
+        end
+        
+        function out = functionalDerivative(obj, var)
+            out = imf.Expression.empty(length(obj), 0);
+            
+            symsex = 'syms';
+            for j = 1:length(var)
+                symsex = [symsex ' ' var(j).expr.name '(t)'];
+            end
+            eval(symsex);
+            
+            for i = 1:length(obj)
+                ex = obj(i).expr.toString;
+                
+                for j = 1:length(var)                   
+                    ex = strrep(ex, ['dot(' var(j).expr.name ')'], ['diff(q' num2str(j) '(t), t)']);
+                    ex = strrep(ex, var(j).expr.name, ['q' num2str(j)]);
+                end
+                
+                ex = eval(ex);
+                dex = diff(ex, t);
+                
+                d = char(dex);
+                for j = 1:length(var)                    
+                    d = strrep(d, ['diff(q' num2str(j) '(t), t)'], ['dot(q' num2str(j) '(t))']);
+                    d = strrep(d, ['diff(q' num2str(j) '(t), t, t)'], ['ddot(q' num2str(j) '(t))']);
+                    d = strrep(d, ['q' num2str(j) '(t)'], 'var(j)');
+                end
+                
+                out(i) = eval(d);
+            end
+            out = eval(out);
         end
         
     end

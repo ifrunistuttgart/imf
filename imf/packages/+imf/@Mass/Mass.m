@@ -3,24 +3,24 @@ classdef Mass < handle
     %   Detailed explanation goes here
     
     properties
-        mass
-        point@imf.Vector
+        value
+        positionVector@imf.Vector
         coordinateSystem@imf.CoordinateSystem
     end
     
     methods
         
-        function obj = Mass(mass, point, coordinateSystem)
-            if isnumeric(mass) && length(mass) == 1
-                obj.mass = mass;
+        function obj = Mass(value, positionVector, coordinateSystem)
+            if isnumeric(value) && length(value) == 1
+                obj.value = value;
             else
                 error('The mass must be an numeric scalar');
             end
             
-            if isvector(point)
-                obj.point = imf.Vector(point);
+            if isvector(positionVector)
+                obj.positionVector = imf.Vector(positionVector);
             elseif isa(point, 'imf.Vector')
-                obj.point = point;
+                obj.positionVector = positionVector;
             else
                 error('The point must be either an numeric vector or an imf.Vector');
             end
