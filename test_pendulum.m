@@ -3,7 +3,7 @@ close all
 clc
 
 %%
-g = [0 0 9.81]';
+g = [0 -9.81 0]';
 m1 = 0.2;
 l = 0.2;
 
@@ -24,7 +24,7 @@ CoordinateSystem I
 
 %%
 m = imf.Model(I);
-m.gravity = g;
+m.gravity = imf.Gravity(g, I);
 m.Add(imf.Mass(m1, [sin(q1)*l,-cos(q1)*l,0]', I));
 
 %%

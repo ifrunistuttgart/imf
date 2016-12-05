@@ -11,7 +11,7 @@ classdef Model < handle
     end
     
     properties
-        gravity
+        gravity@imf.Gravity
     end
     
     methods
@@ -37,7 +37,7 @@ classdef Model < handle
             
             gc = genCoordinates;
             
-            system = imf.Expression.empty(3,0);
+            system = imf.Expression.empty(length(obj.masses),0);
             
             for i=1:length(obj.masses)
                 m = obj.masses(i);
@@ -46,9 +46,21 @@ classdef Model < handle
                 ddr = functionalDerivative(dr, gc);
                 
                 if isempty(system)
-                    system = m.value*jac*ddr;
+                    system = m.value*jac'*ddr';
                 else
-                    system = system + m.value*jac*ddr;
+                    system = system + m.value*jac'*ddr';
+                end
+            end
+            
+            
+            for i=1:length(obj.forces)
+                F = obj.forces(i);
+                jac = jacobian(F.positionVector.items, gc);
+                
+                if isempty(system)
+                    system = jac'*F.value';
+                else
+                    system = system + jac'*F.value.items';
                 end
             end
         end
@@ -74,6 +86,11 @@ classdef Model < handle
                     obj.masses(end+1) = T.Transform(external);
                 else
                     obj.masses(end+1) = external;
+                end
+                
+                if ~isempty(obj.gravity)
+                    m = obj.masses(end);
+                    obj.forces(end+1) = imf.Force(m.value*obj.gravity.value.items, m.positionVector, m.coordinateSystem);
                 end
                 
             else
