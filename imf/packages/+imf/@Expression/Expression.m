@@ -677,6 +677,32 @@ classdef Expression < handle
             out = eval(out);
         end
         
+        function matlabFunction(obj, filename)
+            
+            global IMF_;
+            
+            out = imf.Expression.empty(length(obj), 0);
+            
+            var = IMF_.helper.x;
+            for j = 1:length(var)
+                eval(['syms ' var{1}.name '(t)']);
+                eval(['vars(j) = ' var{1}.name]);
+            end
+            
+            for i = 1:length(obj)
+                ex = obj(i).expr.toString;
+                
+                for j = 1:length(var)
+                    ex = strrep(ex, ['ddot(' var{1}.name ')'], ['diff(' var{1}.name '(t), t, t)']);
+                    ex = strrep(ex, ['dot(' var{1}.name ')'], ['diff(' var{1}.name '(t), t)']);
+                end                
+            end
+            ex = eval(ex);
+            [newEqs, newVars] = reduceDifferentialOrder(ex, vars);
+            [M, F] = massMatrixForm(newEqs, newVars);
+            odeFunction(M, newVars, 'File', [filename 'M']);
+            odeFunction(F, newVars, 'File', [filename 'F']);
+        end
     end
     
 end

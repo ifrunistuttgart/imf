@@ -29,3 +29,11 @@ m.Add(imf.Mass(m1, [sin(q1)*l,-cos(q1)*l,0]', I));
 
 %%
 model = m.Compile();
+model.matlabFunction('model');
+
+%%
+xy0 = [pi/4 0];
+xyp0 = [0 0];
+
+opt = odeset('mass',@modelM, 'RelTol', 10^(-6), 'AbsTol', 10^(-6), 'InitialSlope', xyp0);
+ode15s(@modelF, [0 7], xy0, opt);
