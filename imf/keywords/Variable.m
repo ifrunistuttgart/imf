@@ -1,9 +1,9 @@
-function GeneralizedCoordinate( varargin )
-%GENERALIZEDCOORDINATE Summary of this function goes here
+function Variable( varargin )
+%VARIABLE Summary of this function goes here
 %   Detailed explanation goes here
 
 if ~iscellstr( varargin ),
-    error( 'Syntax is: GeneralizedCoordinate x' );
+    error( 'Syntax is: Variable x' );
     
 else
     
@@ -20,7 +20,7 @@ else
                 if M > 1
                     VAR_NAME = strcat(VAR_NAME,num2str(j));
                 end
-                VAR_ASSIGN = imf.GeneralizedCoordinate(VAR_NAME);
+                VAR_ASSIGN = imf.Variable(VAR_NAME);
                 var(i,j) = VAR_ASSIGN;
                 
                 assignin( 'caller', VAR_NAME, VAR_ASSIGN );

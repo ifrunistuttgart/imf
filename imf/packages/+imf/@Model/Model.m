@@ -58,9 +58,9 @@ classdef Model < handle
                 jac = jacobian(F.positionVector.items, gc);
                 
                 if isempty(system)
-                    system = jac'*F.value';
+                    system = -1 * jac'*F.value';
                 else
-                    system = system + jac'*F.value.items';
+                    system = system - jac'*F.value.items';
                 end
             end
         end

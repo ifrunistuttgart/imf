@@ -13,6 +13,8 @@ classdef Mass < handle
         function obj = Mass(value, positionVector, coordinateSystem)
             if isnumeric(value) && length(value) == 1
                 obj.value = value;
+            elseif isa(value, 'imf.Variable')
+                obj.value = value;
             else
                 error('The mass must be an numeric scalar');
             end
@@ -35,4 +37,3 @@ classdef Mass < handle
     end
     
 end
-

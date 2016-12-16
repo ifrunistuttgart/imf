@@ -648,28 +648,44 @@ classdef Expression < handle
         function out = functionalDerivative(obj, var)
             out = imf.Expression.empty(length(obj), 0);
             
+            global IMF_
+            
             symsex = 'syms';
             for j = 1:length(var)
                 symsex = [symsex ' ' var(j).expr.name '(t)'];
             end
             eval(symsex);
             
+            symsex = 'syms';
+            for j = 1:length(IMF_.helper.var)
+                symsex = [symsex ' imfvar' num2str(j)];
+            end
+            eval(symsex);
+            
             for i = 1:length(obj)
                 ex = obj(i).expr.toString;
                 
-                for j = 1:length(var)                   
+                for j = 1:length(var)
                     ex = strrep(ex, ['dot(' var(j).expr.name ')'], ['diff(q' num2str(j) '(t), t)']);
                     ex = strrep(ex, var(j).expr.name, ['q' num2str(j)]);
+                end
+                
+                for j = 1:length(IMF_.helper.var)
+                    ex = strrep(ex, IMF_.helper.var{j}.name, ['imfvar' num2str(j)]);
                 end
                 
                 ex = eval(ex);
                 dex = diff(ex, t);
                 
                 d = char(dex);
-                for j = 1:length(var)                    
+                for j = 1:length(var)
                     d = strrep(d, ['diff(q' num2str(j) '(t), t)'], ['dot(q' num2str(j) '(t))']);
                     d = strrep(d, ['diff(q' num2str(j) '(t), t, t)'], ['ddot(q' num2str(j) '(t))']);
-                    d = strrep(d, ['q' num2str(j) '(t)'], 'var(j)');
+                    d = strrep(d, ['q' num2str(j) '(t)'], ['var(' num2str(j) ')']);
+                end
+                
+                for j = 1:length(IMF_.helper.var)
+                    d = strrep(d, ['imfvar' num2str(j)], ['IMF_.helper.var{' num2str(j) '}']);
                 end
                 
                 out(i) = eval(d);
@@ -685,9 +701,10 @@ classdef Expression < handle
             
             var = IMF_.helper.x;
             for j = 1:length(var)
-                eval(['syms ' var{1}.name '(t)']);
-                eval(['vars(j) = ' var{1}.name]);
+                eval(['syms ' var{j}.name '(t)']);
+                eval(['vars(j) = ' var{j}.name ';']);
             end
+            
             
             for i = 1:length(obj)
                 ex = obj(i).expr.toString;
@@ -695,13 +712,34 @@ classdef Expression < handle
                 for j = 1:length(var)
                     ex = strrep(ex, ['ddot(' var{1}.name ')'], ['diff(' var{1}.name '(t), t, t)']);
                     ex = strrep(ex, ['dot(' var{1}.name ')'], ['diff(' var{1}.name '(t), t)']);
-                end                
+                end
             end
-            ex = eval(ex);
+            
+            var = IMF_.helper.var;
+            for j = 1:length(var)
+                eval(['syms ' var{j}.name]);
+                eval(['params(j,1) = ' var{j}.name ';']);
+            end
+            
+            ex = simplify(eval(ex));
             [newEqs, newVars] = reduceDifferentialOrder(ex, vars);
+            newEqs = simplify(newEqs);
             [M, F] = massMatrixForm(newEqs, newVars);
-            odeFunction(M, newVars, 'File', [filename 'M']);
-            odeFunction(F, newVars, 'File', [filename 'F']);
+            funM = odeFunction(M, newVars, params, 'File', [filename 'M']);
+            funF = odeFunction(F, newVars, params, 'File', [filename 'F']);
+            
+            disp('======================== DONE =========================')
+            disp('Generation for MATLAB function completed.')
+            disp(['Two functions have been created: @' [filename 'M'] '(t,q,params) and @' [filename 'F'] '(t,q,params).'])
+            disp('The states are:')
+            for i=1:length(newVars)
+                disp(['  Parameter ' num2str(i) ': ' char(newVars(i))]);
+            end
+            disp('The function parameters are:')
+            for i=1:length(params)
+                disp(['  Parameter ' num2str(i) ': ' char(params(i))]);
+            end
+            disp('=======================================================')
         end
     end
     
