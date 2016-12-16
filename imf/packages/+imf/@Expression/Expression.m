@@ -671,7 +671,7 @@ classdef Expression < handle
                 end
                 
                 for j = 1:length(IMF_.helper.var)
-                    ex = strrep(ex, IMF_.helper.var{j}.name, ['imfvar' num2str(j)]);
+                    ex = regexprep(ex, ['(?<!(?:[a-z]))(' IMF_.helper.var{j}.name ')(?!(?:[a-z]+))'], ['imfvar' num2str(j)]);
                 end
                 
                 ex = eval(ex);
