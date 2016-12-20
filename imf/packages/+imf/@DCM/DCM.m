@@ -3,28 +3,25 @@ classdef DCM < handle
     %   Detailed explanation goes here
     
     properties(SetAccess=private)
-        fun@sym
+        fun@imf.Expression
     end
     
     methods(Static)
         function T = T1(gc)
-            a = sym(gc.name);
-            fun = [1         0       0;
-                   0         cos(a)  sin(a);
-                   0         -sin(a) cos(a)];
+            fun = [1        0        0;
+                   0        cos(gc)  sin(gc);
+                   0        -sin(gc) cos(gc)];
             T = imf.DCM(fun);
         end
         function T = T2(gc)
-            a = sym(gc.name);
-            fun = [cos(a)    0       -sin(a);
-                   0         1       0;
-                   sin(a)    0       cos(a)];
+            fun = [cos(gc)   0      -sin(gc);
+                   0         1      0;
+                   sin(gc)   0      cos(gc)];
             T = imf.DCM(fun);
         end
         function T = T3(gc)
-            a = sym(gc.name);
-            fun = [cos(a)    sin(a)  0;
-                   -sin(a)   cos(a)  0;
+            fun = [cos(gc)   sin(gc) 0;
+                   -sin(gc)  cos(gc) 0;
                    0         0       1];
             T = imf.DCM(fun);
         end

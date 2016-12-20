@@ -3,7 +3,7 @@ classdef Model < handle
     %   Detailed explanation goes here
     
     properties(GetAccess = 'private')
-        interialSystem@imf.CoordinateSystem
+        inertialSystem@imf.CoordinateSystem
         forces@imf.Force vector = imf.Force.empty;
         moments@imf.Moment vector = imf.Moment.empty;
         inertias@imf.Inertia vector = imf.Inertia.empty;
@@ -15,14 +15,14 @@ classdef Model < handle
     end
     
     methods
-        function obj = Model(interialSystem)
+        function obj = Model(inertialSystem)
             global IMF_;
             
             if nargin < 1
                 error('Please provide the inertial coordinate system.');
             end
             
-            obj.interialSystem = interialSystem;
+            obj.inertialSystem = inertialSystem;
             
             if isnan(IMF_.model)
                 IMF_.model = obj;
@@ -91,8 +91,8 @@ classdef Model < handle
         function Add(obj, external)
             if isa(external, 'imf.Force')
                 
-                if external.coordinateSystem ~= obj.interialSystem
-                    T = getTransformation(external.coordinateSystem, obj.interialSystem);
+                if external.coordinateSystem ~= obj.inertialSystem
+                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
                     obj.forces(end+1) = T.Transform(external);
                 else
                     obj.forces(end+1) = external;
@@ -100,8 +100,8 @@ classdef Model < handle
                 
             elseif isa(external, 'imf.Moment')
                 
-                if external.coordinateSystem ~= obj.interialSystem
-                    T = getTransformation(external.coordinateSystem, obj.interialSystem);
+                if external.coordinateSystem ~= obj.inertialSystem
+                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
                     error('Not yet implemented.');
                 else
                     obj.moments(end+1) = external;
@@ -109,8 +109,8 @@ classdef Model < handle
                 
             elseif isa(external, 'imf.Inertia')
                 
-                if external.coordinateSystem ~= obj.interialSystem
-                    T = getTransformation(external.coordinateSystem, obj.interialSystem);
+                if external.coordinateSystem ~= obj.inertialSystem
+                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
                     error('Not yet implemented.');
                 else
                     obj.inertias(end+1) = external;
@@ -118,8 +118,8 @@ classdef Model < handle
                 
             elseif isa(external, 'imf.Mass')
                 
-                if external.coordinateSystem ~= obj.interialSystem
-                    T = getTransformation(external.coordinateSystem, obj.interialSystem);
+                if external.coordinateSystem ~= obj.inertialSystem
+                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
                     obj.masses(end+1) = T.Transform(external);
                 else
                     obj.masses(end+1) = external;

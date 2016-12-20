@@ -709,13 +709,14 @@ classdef Expression < handle
                 eval(['vars(j) = ' var{j}.name ';']);
             end
             
-            ex = 'sym(''0'')';
+            % ex = 'sym(''0'')';
+            ex = [];
             for i = 1:length(obj)
-                ex = obj(i).expr.toString;
+                ex{i} = obj(i).expr.toString;
                 
                 for j = 1:length(var)
-                    ex = strrep(ex, ['ddot(' var{1}.name ')'], ['diff(' var{1}.name '(t), t, t)']);
-                    ex = strrep(ex, ['dot(' var{1}.name ')'], ['diff(' var{1}.name '(t), t)']);
+                    ex{i} = strrep(ex{i}, ['ddot(' var{j}.name ')'], ['diff(' var{j}.name '(t), t, t)']);
+                    ex{i} = strrep(ex{i}, ['dot(' var{j}.name ')'], ['diff(' var{j}.name '(t), t)']);
                 end
             end
             
@@ -725,7 +726,10 @@ classdef Expression < handle
                 eval(['params(j,1) = ' var{j}.name ';']);
             end
             
-            ex = simplify(eval(ex));
+            eqs = symfun.empty(length(obj),0);
+            for i = 1:length(obj)
+                eqs(i,1) = simplify(eval(ex{i}));
+            end
             [newEqs, newVars] = reduceDifferentialOrder(ex, vars);
             newEqs = simplify(newEqs);
             [M, F] = massMatrixForm(newEqs, newVars);
