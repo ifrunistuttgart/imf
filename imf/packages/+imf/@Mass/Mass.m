@@ -20,7 +20,11 @@ classdef Mass < handle
             end
             
             if isvector(positionVector)
-                obj.positionVector = imf.Vector(positionVector);
+                if ~isa(positionVector, 'imf.Expression')
+                    obj.positionVector = imf.Vector(imf.Expression(positionVector));
+                else
+                    obj.positionVector = imf.Vector(positionVector);
+                end
             elseif isa(point, 'imf.Vector')
                 obj.positionVector = positionVector;
             else

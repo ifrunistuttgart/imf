@@ -20,7 +20,11 @@ classdef Force
             
             
             if isnumeric(positionVector) && isvector(positionVector)
-                obj.positionVector = imf.Vector(positionVector);
+                if ~isa(positionVector, 'imf.Expression')
+                    obj.positionVector = imf.Vector(imf.Expression(positionVector));
+                else
+                    obj.positionVector = imf.Vector(positionVector);
+                end
             elseif isa(positionVector, 'imf.Vector')
                 obj.positionVector = positionVector;
             else

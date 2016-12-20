@@ -4,13 +4,13 @@ classdef Moment
     
     properties        
         value@imf.Vector
-        postionVector@imf.Vector
+        attitudeVector@imf.Vector
         coordinateSystem@imf.CoordinateSystem
     end
     
     methods
         
-        function obj = Moment(value, postionVector, coordinateSystem)
+        function obj = Moment(value, attitudeVector, coordinateSystem)
             if isvector(value)
                 obj.value = imf.Vector(value);
             elseif isa(force, 'imf.Vector')
@@ -19,12 +19,16 @@ classdef Moment
                 error('The moment must be either an numeric or symbolic vector or an imf.Vector');
             end
             
-            if isvector(postionVector)
-                obj.postionVector = imf.Vector(postionVector);
+            if isvector(attitudeVector)
+                if ~isa(attitudeVector, 'imf.Expression')
+                    obj.attitudeVector = imf.Vector(imf.Expression(attitudeVector));
+                else
+                    obj.attitudeVector = imf.Vector(attitudeVector);
+                end
             elseif isa(force, 'imf.Vector')
-                obj.postionVector = postionVector;
+                obj.attitudeVector = attitudeVector;
             else
-                error('The pointOfApplication must be either an numeric vector or an imf.Vector');
+                error('The attitudeVector must be either an numeric vector or an imf.Vector');
             end
                         
             if isa(coordinateSystem, 'imf.CoordinateSystem')

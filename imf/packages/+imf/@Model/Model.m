@@ -51,8 +51,7 @@ classdef Model < handle
                     system = system + m.value*jac'*ddr';
                 end
             end
-            
-            
+                        
             for i=1:length(obj.forces)
                 F = obj.forces(i);
                 jac = jacobian(F.positionVector.items, gc);
@@ -61,6 +60,30 @@ classdef Model < handle
                     system = -1 * jac'*F.value';
                 else
                     system = system - jac'*F.value.items';
+                end
+            end
+            
+            for i=1:length(obj.moments)
+                M = obj.moments(i);
+                jac = jacobian(M.attitudeVector.items, gc);
+                
+                if isempty(system)
+                    system = -1 * jac'*M.value.items';
+                else
+                    system = system - jac'*M.value.items';
+                end
+            end
+            
+            for i=1:length(obj.inertias)
+                I = obj.inertias(i);
+                jac = jacobian(I.attitudeVector.items, gc);
+                dg = functionalDerivative(I.attitudeVector.items, gc);
+                ddg = functionalDerivative(dg, gc);
+                
+                if isempty(system)
+                    system = jac'*(I.value*ddg' + cross(dg,I.value*dg));
+                else
+                    system = system + jac'*(I.value.items*ddg' + cross(dg,I.value.items*dg')');
                 end
             end
         end
@@ -76,9 +99,23 @@ classdef Model < handle
                 end
                 
             elseif isa(external, 'imf.Moment')
-                obj.moments(end+1) = external;
+                
+                if external.coordinateSystem ~= obj.interialSystem
+                    T = getTransformation(external.coordinateSystem, obj.interialSystem);
+                    error('Not yet implemented.');
+                else
+                    obj.moments(end+1) = external;
+                end
+                
             elseif isa(external, 'imf.Inertia')
-                obj.inertias(end+1) = external;
+                
+                if external.coordinateSystem ~= obj.interialSystem
+                    T = getTransformation(external.coordinateSystem, obj.interialSystem);
+                    error('Not yet implemented.');
+                else
+                    obj.inertias(end+1) = external;
+                end
+                
             elseif isa(external, 'imf.Mass')
                 
                 if external.coordinateSystem ~= obj.interialSystem

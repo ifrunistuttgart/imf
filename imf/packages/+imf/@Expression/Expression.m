@@ -637,7 +637,11 @@ classdef Expression < handle
                 
                 for i = 1:size(obj,1)
                     for j = 1:size(obj,2)
-                        out(i,j) = evalin('base', obj(i,j).toString);
+                        tmp = evalin('base', obj(i,j).toString);
+                        if ~isa(tmp, 'imf.Expression')
+                            tmp = imf.Expression(tmp);
+                        end
+                        out(i,j) = tmp;
                     end
                 end
             else
@@ -705,7 +709,7 @@ classdef Expression < handle
                 eval(['vars(j) = ' var{j}.name ';']);
             end
             
-            
+            ex = 'sym(''0'')';
             for i = 1:length(obj)
                 ex = obj(i).expr.toString;
                 
