@@ -46,7 +46,7 @@ l = 0.2;
 
 xy0 = [pi/12 pi/12 0 0]';
 xyp0 = [0 0 0 0];
-tspan = linspace(0,7,100);
+tspan = linspace(0,40,4000);
 
 opt = odeset('mass',@(t,x) modelM(t, x, [m1;m2;l]), 'RelTol', 10^(-6), 'AbsTol', 10^(-6), 'InitialSlope', xyp0);
 [tsol,ysol] = ode15s(@(t,x) modelF(t, x, [m1;m2;l]), tspan, xy0, opt);
@@ -54,3 +54,18 @@ figure
 grid on
 hold on
 plot(tsol, ysol)
+legend('q1', 'q2', 'dq1', 'dq2')
+
+%%
+figure
+pause on
+for i=1:length(ysol)
+    q1 = ysol(i, 1);
+    T = eval(T12.rotation.fun);
+    offset = eval(T12.offset.items);
+    R = [T offset; 0 0 0 1];
+    
+    grid on
+    visualizeCoordinateSystem(R, 1)
+    pause(0.1)
+end

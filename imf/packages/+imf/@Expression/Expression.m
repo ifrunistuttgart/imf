@@ -675,6 +675,8 @@ classdef Expression < handle
                 end
                 
                 for j = 1:length(IMF_.helper.var)
+                    % replace variable if it does not have a leading or
+                    % trailing alphanumeric symbol
                     ex = regexprep(ex, ['(?<!(?:[a-z]))(' IMF_.helper.var{j}.name ')(?!(?:[a-z]+))'], ['imfvar' num2str(j)]);
                 end
                 
@@ -701,8 +703,6 @@ classdef Expression < handle
             
             global IMF_;
             
-            out = imf.Expression.empty(length(obj), 0);
-            
             var = IMF_.helper.x;
             for j = 1:length(var)
                 eval(['syms ' var{j}.name '(t)']);
@@ -728,13 +728,16 @@ classdef Expression < handle
             
             eqs = symfun.empty(length(obj),0);
             for i = 1:length(obj)
-                eqs(i,1) = simplify(eval(ex{i}));
+                eqs(i,1) = eval(ex{i});
+                if isa(eqs(i,1), 'sym')
+                    eqs(i,1) = simplify(eqs(i,1));
+                end
             end
-            [newEqs, newVars] = reduceDifferentialOrder(ex, vars);
+            [newEqs, newVars] = reduceDifferentialOrder(eqs, vars);
             newEqs = simplify(newEqs);
             [M, F] = massMatrixForm(newEqs, newVars);
-            funM = odeFunction(M, newVars, params, 'File', [filename 'M']);
-            funF = odeFunction(F, newVars, params, 'File', [filename 'F']);
+            odeFunction(M, newVars, params, 'File', [filename 'M']);
+            odeFunction(F, newVars, params, 'File', [filename 'F']);
             
             disp('======================== DONE =========================')
             disp('Generation for MATLAB function completed.')
