@@ -5,6 +5,7 @@ classdef IMFHelper < handle
         dx = {};    % diff generalized coordinate
         ddx = {};    % 2nd diff generalized coordinate
         var = {};    % variables
+        param = {};  % parameters
     end
     
     methods
@@ -121,22 +122,22 @@ classdef IMFHelper < handle
             obj.ddx = {};
         end
         
-        % Add variable
-        function addVar(obj, set)
+        % Add parameter
+        function addParam(obj, set)
             
-            for i=1:length(obj.var)
-                if (strcmp(obj.var{i}.name, set.name))
-                   error('The variable you are trying to add already exists.'); 
+            for i=1:length(obj.param)
+                if (strcmp(obj.param{i}.name, set.name))
+                   error('The parameter you are trying to add already exists.'); 
                 end
             end
             
-            obj.var{length(obj.var)+1} = set;
+            obj.param{length(obj.param)+1} = set;
         end
-        function clearVar(obj)
-            for i = 1:length(obj.var)
-            	obj.removeInstruction(obj.var{i});
+        function clearParam(obj)
+            for i = 1:length(obj.param)
+            	obj.removeInstruction(obj.param{i});
             end
-            obj.var = {};
+            obj.param = {};
         end
     end
     

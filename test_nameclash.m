@@ -19,7 +19,7 @@ BEGIN_IMF
 
 GeneralizedCoordinate q1
 CoordinateSystem I
-Variable l ll m1
+Parameter l ll m1
 
 %%
 m = imf.Model(I);

@@ -20,14 +20,22 @@
 %    License along with ACADO Toolkit; if not, write to the Free Software
 %    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-classdef Variable < imf.Expression
-    properties(SetAccess='private')
-        value;
-    end
+classdef Parameter < imf.Variable
     
     methods
-        function obj = Variable(name)            
-            obj.singleTerm = 1;            
+        function obj = Parameter(name)
+            
+            obj.singleTerm = 1;
+            
+            global IMF_;
+            if (isvarname(name) ~= 1)
+                error( 'ERROR: The parameter name you have set is not a valid matlab variable name. A valid variable name is a character string of letters, digits, and underscores, totaling not more than namelengthmax characters and beginning with a letter.' );
+            end
+            
+            obj.name = name;
+            
+            IMF_.helper.addParam(obj);
+            
         end
         
         function out = copy(obj)
@@ -60,5 +68,5 @@ classdef Variable < imf.Expression
             end
             
         end
-    end    
+    end
 end

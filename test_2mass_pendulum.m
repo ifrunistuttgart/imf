@@ -19,7 +19,7 @@ BEGIN_IMF
 
 GeneralizedCoordinate q1 q2
 CoordinateSystem I c1
-Variable m1 m2 l
+Parameter m1 m2 l
 
 %%
 % Transformation from System 2 to System 1

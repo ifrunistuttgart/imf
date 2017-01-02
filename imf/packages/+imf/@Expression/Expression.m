@@ -683,7 +683,7 @@ classdef Expression < handle
             eval(symsex);
             
             symsex = 'syms';
-            for j = 1:length(IMF_.helper.var)
+            for j = 1:length(IMF_.helper.param)
                 symsex = [symsex ' imfvar' num2str(j)];
             end
             eval(symsex);
@@ -696,10 +696,10 @@ classdef Expression < handle
                     ex = strrep(ex, var(j).expr.name, ['q' num2str(j)]);
                 end
                 
-                for j = 1:length(IMF_.helper.var)
+                for j = 1:length(IMF_.helper.param)
                     % replace variable if it does not have a leading or
                     % trailing alphanumeric symbol
-                    ex = regexprep(ex, ['(?<!(?:[a-z]))(' IMF_.helper.var{j}.name ')(?!(?:[a-z]+))'], ['imfvar' num2str(j)]);
+                    ex = regexprep(ex, ['(?<!(?:[a-z]))(' IMF_.helper.param{j}.name ')(?!(?:[a-z]+))'], ['imfvar' num2str(j)]);
                 end
                 
                 ex = eval(ex);
@@ -712,8 +712,8 @@ classdef Expression < handle
                     d = strrep(d, ['q' num2str(j) '(t)'], ['var(' num2str(j) ')']);
                 end
                 
-                for j = 1:length(IMF_.helper.var)
-                    d = strrep(d, ['imfvar' num2str(j)], ['IMF_.helper.var{' num2str(j) '}']);
+                for j = 1:length(IMF_.helper.param)
+                    d = strrep(d, ['imfvar' num2str(j)], ['IMF_.helper.param{' num2str(j) '}']);
                 end
                 
                 out(i) = eval(d);
@@ -725,10 +725,9 @@ classdef Expression < handle
             
             global IMF_;
             
-            var = IMF_.helper.x;
-            for j = 1:length(var)
-                eval(['syms ' var{j}.name '(t)']);
-                eval(['vars(j) = ' var{j}.name ';']);
+            for j = 1:length(IMF_.helper.x)
+                eval(['syms ' IMF_.helper.x{j}.name '(t)']);
+                eval(['vars(j) = ' IMF_.helper.x{j}.name ';']);
             end
             
             % ex = 'sym(''0'')';
@@ -736,16 +735,15 @@ classdef Expression < handle
             for i = 1:length(obj)
                 ex{i} = obj(i).expr.toString;
                 
-                for j = 1:length(var)
-                    ex{i} = strrep(ex{i}, ['ddot(' var{j}.name ')'], ['diff(' var{j}.name '(t), t, t)']);
-                    ex{i} = strrep(ex{i}, ['dot(' var{j}.name ')'], ['diff(' var{j}.name '(t), t)']);
+                for j = 1:length(IMF_.helper.x)
+                    ex{i} = strrep(ex{i}, ['ddot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t, t)']);
+                    ex{i} = strrep(ex{i}, ['dot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t)']);
                 end
             end
             
-            var = IMF_.helper.var;
-            for j = 1:length(var)
-                eval(['syms ' var{j}.name]);
-                eval(['params(j,1) = ' var{j}.name ';']);
+            for j = 1:length(IMF_.helper.param)
+                eval(['syms ' IMF_.helper.param{j}.name]);
+                eval(['params(j,1) = ' IMF_.helper.param{j}.name ';']);
             end
             
             eqs = symfun.empty(length(obj),0);

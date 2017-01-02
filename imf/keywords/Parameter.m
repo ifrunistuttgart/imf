@@ -20,45 +20,36 @@
 %    License along with ACADO Toolkit; if not, write to the Free Software
 %    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-classdef Variable < imf.Expression
-    properties(SetAccess='private')
-        value;
+function Parameter( varargin )
+
+if ~iscellstr( varargin ),
+    error( 'Syntax is: Parameter x' );
+    
+else
+    
+    for k = 1 : nargin,
+        [name N M] = readVariable(varargin{k});
+        
+        for i = 1:N
+            for j = 1:M
+                if N > 1
+                    VAR_NAME = strcat(name,num2str(i));
+                else
+                    VAR_NAME = name;
+                end
+                if M > 1
+                    VAR_NAME = strcat(VAR_NAME,num2str(j));
+                end
+                VAR_ASSIGN = imf.Parameter(VAR_NAME);
+                var(i,j) = VAR_ASSIGN;
+                
+                assignin( 'caller', VAR_NAME, VAR_ASSIGN );
+            end
+        end
+        assignin( 'caller', name, var );
+        var = VAR_ASSIGN;
     end
     
-    methods
-        function obj = Variable(name)            
-            obj.singleTerm = 1;            
-        end
-        
-        function out = copy(obj)
-            out = obj;
-        end
-        
-        function s = toString(obj)
-            if isempty(obj.value)
-                s = obj.name;
-            else
-                s = num2str(obj.value);
-            end
-        end
-        
-        function setValue(obj, set)
-            if isempty(set) || isnumeric(set)
-                obj.value = set;
-            else
-                error('A value needs to be numeric.');
-            end
-        end
-        
-        function jac = jacobian(obj, var)
-            if ~isvector(obj)
-                error('A jacobian can only be computed of a vector function.');
-            end
-            
-            for i = 1:length(obj)
-                jac(i,:) = zeros(1,length(var));
-            end
-            
-        end
-    end    
+end
+
 end
