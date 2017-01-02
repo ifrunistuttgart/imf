@@ -91,6 +91,10 @@ The class is the base for every symbolic formulation. It defines a lot of arithm
     matlabFunction(filename)
 Reduces the order of the differential function and generates two files *filenameM* and *filenameF* giving a first order differential equation in mass-matrix form M*xdot = F
 
+#### imf.Vector ####
+#### imf.Matrix ####
+#### imf.CoordinateSystem ####
+
 ## Examples ##
 ### Pendulum ###
 
