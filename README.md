@@ -42,7 +42,9 @@ Sets the gravity for the model as an [imf.Gravity](#imfgravity).
 #### imf.Mass ####
 
 ##### Constructor #####
-    Mass(value, positionVector, coordinateSystem)
+    Mass(name, value, positionVector, coordinateSystem)
+
+*name:* A name for this mass, which is used for visualization.
 
 *value:* A scalar value or an [imf.Parameter](#imfparameter) defining the mass of a mass point.
 
@@ -53,7 +55,9 @@ Sets the gravity for the model as an [imf.Gravity](#imfgravity).
 #### imf.Force ####
 
 ##### Constructor #####
-    Force(value, positionVector, coordinateSystem)
+    Force(name, value, positionVector, coordinateSystem)
+
+*name:* A name for this mass, which is used for visualization.
 
 *value:* A vector or an [imf.Vector](#imfvector) defining the magnitude and the direction of a force given in *coordinateSystem*.
 
@@ -94,6 +98,27 @@ Reduces the order of the differential function and generates two files *filename
 #### imf.Vector ####
 #### imf.Matrix ####
 #### imf.CoordinateSystem ####
+
+### Important Functions ###
+#### visualize ####
+	visualize(model, variables, values, varargin)
+
+*model:* The [imf.Model](#imfmodel) holding all masses, forces, etc. which will be displayed
+
+*variables:* The variables which need to be substituded by numeric *values*. The variables need to be passed in a cell array.
+
+*values:* The numeric values for *variables* in the same order as *variables*.
+
+*varargin:*
+ 
+- 'axis': Axis limits for x, y and z axis passed as a vector.
+- 'view': View angles for azimuth and elevation as a vector.
+- 'scale': A scalar scale value to adjust arrow lengths (not fully tested).
+- 'revz': A switch to reverse the z axis.
+
+    % EXAMPLE USAGE:  
+    visualize(m, {q1, q2, m1, m2, l}, [ysol(i,1), ysol(i,2), m1v, m2v, lv], 'axis', [-2 2 -2 2 -.5 4], 'view', [0 0], 'revz', 1)
+
 
 ## Examples ##
 ### Pendulum ###
