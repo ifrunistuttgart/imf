@@ -46,7 +46,7 @@ lv = 1;
 
 xy0 = [pi/12 -pi/12 0 0]';
 xyp0 = [0 0 0 0];
-tspan = linspace(0,40,4000);
+tspan = linspace(0,10,500);
 
 opt = odeset('mass',@(t,x) modelM(t, x, [m1v;m2v;lv]), 'RelTol', 10^(-6), 'AbsTol', 10^(-6), 'InitialSlope', xyp0);
 [tsol,ysol] = ode15s(@(t,x) modelF(t, x, [m1v;m2v;lv]), tspan, xy0, opt);
@@ -59,13 +59,13 @@ legend('q1', 'q2', 'dq1', 'dq2')
 %%
 limits = [-2 2 -2 2 -.5 4];
 dt = max(tspan) / length(tspan);
-visualize(m, {q1, q2, m1, m2, l}, [ysol(1,1), ysol(1,2), m1v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
 
-
-mov(1:length(tspan)) = struct('cdata', [],...
-                        'colormap', []);
+v = VideoWriter('2mass_pendulum.mp4', 'MPEG-4');
+v.FrameRate = 1/dt;
+open(v)
 for i=1:length(ysol)
     visualize(m, {q1, q2, m1, m2, l}, [ysol(i,1), ysol(i,2), m1v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
-    mov(i) = getframe(gcf);
+    frame = getframe;
+    writeVideo(v,frame);
 end
-movie2avi(mov, 'example.avi', 'compression', 'None', 'fps', 1/dt);
+close(v)
