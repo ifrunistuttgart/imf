@@ -32,24 +32,24 @@ T12.offset = imf.Vector(l*[sin(q1);0;cos(q1)]);
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass(m1, [sin(q1)*l,0,cos(q1)*l]', I));
-m.Add(imf.Mass(m2, [sin(q2)*l,0,cos(q2)*l]', c1));
+m.Add(imf.Mass('m1', m1, [sin(q1)*l,0,cos(q1)*l]', I));
+m.Add(imf.Mass('m2', m2, [sin(q2)*l,0,cos(q2)*l]', c1));
 
 %%
 model = m.Compile();
 model.matlabFunction('model');
 
 %%
-m1 = 1;
-m2 = 1;
-l = 0.2;
+m1v = 0.1;
+m2v = 0.1;
+lv = 1;
 
-xy0 = [pi/12 pi/12 0 0]';
+xy0 = [pi/12 -pi/12 0 0]';
 xyp0 = [0 0 0 0];
 tspan = linspace(0,40,4000);
 
-opt = odeset('mass',@(t,x) modelM(t, x, [m1;m2;l]), 'RelTol', 10^(-6), 'AbsTol', 10^(-6), 'InitialSlope', xyp0);
-[tsol,ysol] = ode15s(@(t,x) modelF(t, x, [m1;m2;l]), tspan, xy0, opt);
+opt = odeset('mass',@(t,x) modelM(t, x, [m1v;m2v;lv]), 'RelTol', 10^(-6), 'AbsTol', 10^(-6), 'InitialSlope', xyp0);
+[tsol,ysol] = ode15s(@(t,x) modelF(t, x, [m1v;m2v;lv]), tspan, xy0, opt);
 figure
 grid on
 hold on
@@ -57,3 +57,15 @@ plot(tsol, ysol)
 legend('q1', 'q2', 'dq1', 'dq2')
 
 %%
+limits = [-2 2 -2 2 -.5 4];
+dt = max(tspan) / length(tspan);
+visualize(m, {q1, q2, m1, m2, l}, [ysol(1,1), ysol(1,2), m1v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
+
+
+mov(1:length(tspan)) = struct('cdata', [],...
+                        'colormap', []);
+for i=1:length(ysol)
+    visualize(m, {q1, q2, m1, m2, l}, [ysol(i,1), ysol(i,2), m1v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
+    mov(i) = getframe(gcf);
+end
+movie2avi(mov, 'example.avi', 'compression', 'None', 'fps', 1/dt);

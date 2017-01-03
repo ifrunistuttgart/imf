@@ -2,7 +2,8 @@ classdef Mass < handle
     %MASS Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties(SetAccess = 'private')
+        name
         value
         positionVector@imf.Vector
         coordinateSystem@imf.CoordinateSystem
@@ -10,7 +11,12 @@ classdef Mass < handle
     
     methods
         
-        function obj = Mass(value, positionVector, coordinateSystem)
+        function obj = Mass(name, value, positionVector, coordinateSystem)
+            
+            if ischar(name) && ~isempty(value)
+                obj.name = name;
+            end
+            
             if isnumeric(value) && length(value) == 1
                 obj.value = value;
             elseif isa(value, 'imf.Variable')

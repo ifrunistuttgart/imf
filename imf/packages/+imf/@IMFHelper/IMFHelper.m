@@ -3,35 +3,15 @@ classdef IMFHelper < handle
         %setVariables
         x = {};     % generalized coordinate
         dx = {};    % diff generalized coordinate
-        ddx = {};    % 2nd diff generalized coordinate
-        var = {};    % variables
-        param = {};  % parameters
+        ddx = {};   % 2nd diff generalized coordinate
+        var = {};   % variables
+        param = {}; % parameters
+        cs = {};    % coordinate systems
     end
     
     methods
         function obj = IMFHelper(varargin)
 
-        end
-        
-        % Add instruction (differentialequation, ocp,... to list)
-        function addInstruction(obj, set)
-            obj.instructionList{length(obj.instructionList)+1} = set;
-        end
-        
-        % Remove last instruction
-        function removeInstruction(obj, set)
-            found = 0;
-            i = 1;
-            while i <= length(obj.instructionList) && ~found
-                if strcmp(class(obj.instructionList{i}), class(set)) && strcmp(obj.instructionList{i}.toString, set.toString)
-                    found = 1;
-                else 
-                    i = i+1;
-                end
-            end
-            if found
-                obj.instructionList = {obj.instructionList{1:i-1}, obj.instructionList{i+1:end}};
-            end
         end
         
         % Add differential state
@@ -46,9 +26,6 @@ classdef IMFHelper < handle
             obj.x{length(obj.x)+1} = set;
         end
         function clearX(obj)
-            for i = 1:length(obj.x)
-            	obj.removeInstruction(obj.x{i});
-            end
             obj.x = {};
         end
         
@@ -134,9 +111,21 @@ classdef IMFHelper < handle
             obj.param{length(obj.param)+1} = set;
         end
         function clearParam(obj)
-            for i = 1:length(obj.param)
-            	obj.removeInstruction(obj.param{i});
+            obj.param = {};
+        end
+        
+        % Add parameter
+        function addCS(obj, set)
+            
+            for i=1:length(obj.cs)
+                if (strcmp(obj.cs{i}.name, set.name))
+                   error('The coordinate system you are trying to add already exists.'); 
+                end
             end
+            
+            obj.cs{length(obj.cs)+1} = set;
+        end
+        function clearCS(obj)
             obj.param = {};
         end
     end

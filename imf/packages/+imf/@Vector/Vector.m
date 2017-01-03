@@ -49,9 +49,7 @@ classdef Vector < imf.VectorspaceElement
 	                error('Vector expects a numeric value'); 
             	end     
 			end
-        end  
-        
-        getInstructions(obj, cppobj, get)
+        end
 
     end
     

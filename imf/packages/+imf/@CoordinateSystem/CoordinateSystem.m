@@ -16,6 +16,7 @@ classdef CoordinateSystem < handle
                 end
                 
                 obj.name = name;
+                IMF_.helper.addCS(obj);
             end
         end
         

@@ -26,29 +26,45 @@ classdef Transformation < handle
         function obj = ctranspose(a)
             obj = imf.Transformation(a.to, a.from);
             obj.rotation = a.rotation';
-            obj.offset = a.rotation*-1*a.offset;
+            obj.offset = a.rotation* -1 * a.offset;
+        end
+        
+        
+        function T = HomogeneousMatrix(obj)
+                % transrotational transformation
+                T = [obj.rotation.fun obj.offset.items';
+                    zeros(1, 3)          1];
         end
         
         function texternal = Transform(obj, external)
-                % transrotational transformation
-                Tt = [obj.rotation.fun -1*obj.offset.items';
-                    zeros(1, 3)          1];
+                % homogeneous matrix
+                Th = obj.HomogeneousMatrix;
                 
                 % rotational transformation
                 Tr = obj.rotation.fun;
                 
-            if isa(external, 'imf.Force')                
+            if isa(external, 'imf.Vector')
+                vector = Th * [external.items'; 1];
+                
+                texternal = imf.Vector(vector(1:3));
+            elseif isa(external, 'imf.Force')
+                name = external.name;
                 force = Tr * external.value;
-                positionVector = Tt * [external.positionVector.items'; 1];
+                positionVector = Th * [external.positionVector.items'; 1];
                 coordinateSystem = obj.to;
                 
-                texternal = imf.Force(force, positionVector(1:3), coordinateSystem);
-            elseif isa(external, 'imf.Mass')                
+                texternal = imf.Force(name, force, positionVector(1:3), coordinateSystem);
+            elseif isa(external, 'imf.Mass')
+                name = external.name;
                 mass = external.value;
-                positionVector = Tt * [external.positionVector.items'; 1];
+                positionVector = Th * [external.positionVector.items'; 1];
                 coordinateSystem = obj.to;
                 
-                texternal = imf.Mass(mass, positionVector(1:3), coordinateSystem);
+                texternal = imf.Mass(name, mass, positionVector(1:3), coordinateSystem);
+            elseif isa(external, 'imf.Moment')
+                error('Not yet implemented.')
+            elseif isa(external, 'imf.Inertia')
+                error('Not yet implemented.')
             end
         end
     end

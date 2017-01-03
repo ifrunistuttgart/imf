@@ -2,22 +2,27 @@ classdef Force
     %FORCE Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties(SetAccess = 'private')
+        name
         value@imf.Vector
         positionVector@imf.Vector
         coordinateSystem@imf.CoordinateSystem
     end
     
     methods
-        function obj = Force(value, positionVector, coordinateSystem)
+        function obj = Force(name, value, positionVector, coordinateSystem)
+            
+            if ischar(name) && ~isempty(value)
+                obj.name = name;
+            end
+            
             if isvector(value)
                 obj.value = imf.Vector(value);
             elseif isa(value, 'imf.Vector')
                 obj.value = value;
             else
                 error('The force must be either an numeric or symbolic vector or an imf.Vector');
-            end
-            
+            end            
             
             if isnumeric(positionVector) && isvector(positionVector)
                 if ~isa(positionVector, 'imf.Expression')

@@ -628,41 +628,20 @@ classdef Expression < handle
             out = imf.Expression(imf.IntermediateState(obj));
         end
         
-        function out = eval(obj, varargin) % x, u, z, dx, od, p, w, t
+        function out = eval(obj, ws)
             global IMF_;
             if ~isempty(IMF_)
-                t = []; x = []; z = []; dx = []; u = []; od = []; p = []; w = [];
-                if nargin > 1
-                    x = varargin{1};
-                    if nargin > 2
-                        u = varargin{2};
-                        if nargin > 3
-                            z = varargin{3};
-                            if nargin > 4
-                                dx = varargin{4};
-                                if nargin > 5
-                                    od = varargin{5};
-                                    if nargin > 6
-                                        p = varargin{6};
-                                        if nargin > 7
-                                            w = varargin{7};
-                                            if nargin > 8
-                                                t = varargin{8};
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
                 
+                if nargin < 2
+                    ws = 'base';
+                end
+                               
                 for i = 1:size(obj,1)
                     for j = 1:size(obj,2)
-                        tmp = evalin('base', obj(i,j).toString);
-                        if ~isa(tmp, 'imf.Expression')
-                            tmp = imf.Expression(tmp);
-                        end
+                        tmp = evalin(ws, obj(i,j).toString);
+%                        if ~isa(tmp, 'imf.Expression')
+%                            tmp = imf.Expression(tmp);
+%                        end
                         out(i,j) = tmp;
                     end
                 end

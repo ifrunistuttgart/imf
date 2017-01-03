@@ -2,7 +2,7 @@ classdef Model < handle
     %MODEL Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties(GetAccess = 'private')
+    properties(SetAccess = 'private')
         inertialSystem@imf.CoordinateSystem
         forces@imf.Force vector = imf.Force.empty;
         moments@imf.Moment vector = imf.Moment.empty;
@@ -127,7 +127,7 @@ classdef Model < handle
                 
                 if ~isempty(obj.gravity)
                     m = obj.masses(end);
-                    obj.forces(end+1) = imf.Force(m.value*obj.gravity.value.items, m.positionVector, m.coordinateSystem);
+                    obj.forces(end+1) = imf.Force(['F' m.name], m.value*obj.gravity.value.items, m.positionVector, m.coordinateSystem);
                 end
                 
             else

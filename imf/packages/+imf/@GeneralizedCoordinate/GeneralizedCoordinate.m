@@ -17,8 +17,6 @@ classdef GeneralizedCoordinate < imf.Variable
             end
         end
         
-        getInstructions(obj, cppobj, get)
-        
         function jac = jacobian(obj, var)
             if ~isvector(obj)
                 error('A jacobian can only be computed of a vector function.');

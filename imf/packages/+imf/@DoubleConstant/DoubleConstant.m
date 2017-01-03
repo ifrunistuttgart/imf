@@ -53,10 +53,6 @@ classdef DoubleConstant < imf.Operator
             out = imf.DoubleConstant(obj.val);
         end
         
-        
-        getInstructions(obj, cppobj, get)
-        
-        
         function s = toString(obj)
             % toString is used in epxressions (eg 2 + x -> DoubleConstant +
             % DifferentialState)
