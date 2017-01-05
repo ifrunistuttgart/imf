@@ -32,6 +32,24 @@ classdef TransformationChain < handle
             for i=length(obj.transformations):-1:1
                 texternal = obj.transformations(i).Transform(texternal);
             end
+        end        
+        
+        function R = HomogeneousMatrix(obj)
+                        
+            R = eye(4);
+            for i=length(obj.transformations):-1:1
+                R = R * obj.transformations(i).HomogeneousMatrix;
+            end
+            
+        end
+        
+        function T = rotation(obj)
+            
+            T = eye(3);
+            for i=length(obj.transformations):-1:1
+                T = T * obj.transformations(i).rotation.expr;
+            end
+            T = imf.RotationMatrix(T);
         end
     end
     

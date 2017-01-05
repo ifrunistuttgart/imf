@@ -24,7 +24,7 @@ Parameter m1 m2 l
 %%
 % Transformation from System 2 to System 1
 T12 = imf.Transformation(c1,I);
-T12.rotation = imf.DCM.T2(q1);
+T12.rotation = imf.RotationMatrix.T2(q1);
 % The offset of the origin of System 2 to System 1
 % with regards to System 1
 T12.offset = imf.Vector(l*[sin(q1);0;cos(q1)]);

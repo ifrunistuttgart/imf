@@ -51,7 +51,7 @@ classdef Model < handle
                     system = system + m.value*jac'*ddr';
                 end
             end
-                        
+            
             for i=1:length(obj.forces)
                 F = obj.forces(i);
                 jac = jacobian(F.positionVector.items, gc);
@@ -91,17 +91,11 @@ classdef Model < handle
         function Add(obj, external)
             if isa(external, 'imf.Force')
                 
-                if external.coordinateSystem ~= obj.inertialSystem
-                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
-                    obj.forces(end+1) = T.Transform(external);
-                else
-                    obj.forces(end+1) = external;
-                end
+                obj.forces(end+1) = external.In(obj.inertialSystem);
                 
             elseif isa(external, 'imf.Moment')
                 
                 if external.coordinateSystem ~= obj.inertialSystem
-                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
                     error('Not yet implemented.');
                 else
                     obj.moments(end+1) = external;
@@ -110,7 +104,6 @@ classdef Model < handle
             elseif isa(external, 'imf.Inertia')
                 
                 if external.coordinateSystem ~= obj.inertialSystem
-                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
                     error('Not yet implemented.');
                 else
                     obj.inertias(end+1) = external;
@@ -118,16 +111,11 @@ classdef Model < handle
                 
             elseif isa(external, 'imf.Mass')
                 
-                if external.coordinateSystem ~= obj.inertialSystem
-                    T = getTransformation(external.coordinateSystem, obj.inertialSystem);
-                    obj.masses(end+1) = T.Transform(external);
-                else
-                    obj.masses(end+1) = external;
-                end
+                obj.masses(end+1) = external.In(obj.inertialSystem);
                 
                 if ~isempty(obj.gravity)
                     m = obj.masses(end);
-                    obj.forces(end+1) = imf.Force(['F' m.name], m.value*obj.gravity.value.items, m.positionVector, m.coordinateSystem);
+                    obj.forces(end+1) = imf.Force(['F' m.name], imf.Vector(m.value*obj.gravity.items, m.positionVector.coordinateSystem), m.positionVector);
                 end
                 
             else

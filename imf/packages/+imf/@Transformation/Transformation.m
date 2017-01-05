@@ -7,7 +7,7 @@ classdef Transformation < handle
         to@imf.CoordinateSystem
     end
     properties(SetAccess='public')
-        rotation@imf.DCM
+        rotation@imf.RotationMatrix
         offset@imf.Vector
     end
     
@@ -26,44 +26,33 @@ classdef Transformation < handle
         function obj = ctranspose(a)
             obj = imf.Transformation(a.to, a.from);
             obj.rotation = a.rotation';
-            obj.offset = a.rotation* -1 * a.offset;
+            obj.offset = imf.Vector(obj.rotation.expr * -1 * a.offset.items', a.from);
         end
         
         
         function T = HomogeneousMatrix(obj)
-                % transrotational transformation
-                T = [obj.rotation.fun obj.offset.items';
-                    zeros(1, 3)          1];
+            % transrotational transformation
+            T = [obj.rotation.expr obj.offset.items';
+                zeros(1, 3)          1];
         end
         
-        function texternal = Transform(obj, external)
-                % homogeneous matrix
-                Th = obj.HomogeneousMatrix;
+        function texternal = Transform(obj, in)
+            
+            if isa(in, 'imf.Force')
+                name = in.name;
+                force = in.value.In(obj.to);
+                positionVector = in.positionVector.In(obj.to);
                 
-                % rotational transformation
-                Tr = obj.rotation.fun;
+                texternal = imf.Force(name, force, positionVector(1:3));
+            elseif isa(in, 'imf.Mass')
+                name = in.name;
+                mass = in.value;
+                positionVector = in.positionVector.In(obj.to);
                 
-            if isa(external, 'imf.Vector')
-                vector = Th * [external.items'; 1];
-                
-                texternal = imf.Vector(vector(1:3));
-            elseif isa(external, 'imf.Force')
-                name = external.name;
-                force = Tr * external.value;
-                positionVector = Th * [external.positionVector.items'; 1];
-                coordinateSystem = obj.to;
-                
-                texternal = imf.Force(name, force, positionVector(1:3), coordinateSystem);
-            elseif isa(external, 'imf.Mass')
-                name = external.name;
-                mass = external.value;
-                positionVector = Th * [external.positionVector.items'; 1];
-                coordinateSystem = obj.to;
-                
-                texternal = imf.Mass(name, mass, positionVector(1:3), coordinateSystem);
-            elseif isa(external, 'imf.Moment')
+                texternal = imf.Mass(name, mass, positionVector(1:3));
+            elseif isa(in, 'imf.Moment')
                 error('Not yet implemented.')
-            elseif isa(external, 'imf.Inertia')
+            elseif isa(in, 'imf.Inertia')
                 error('Not yet implemented.')
             end
         end

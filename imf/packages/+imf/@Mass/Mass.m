@@ -5,13 +5,12 @@ classdef Mass < handle
     properties(SetAccess = 'private')
         name
         value
-        positionVector@imf.Vector
-        coordinateSystem@imf.CoordinateSystem
+        positionVector@imf.PositionVector
     end
     
     methods
         
-        function obj = Mass(name, value, positionVector, coordinateSystem)
+        function obj = Mass(name, value, positionVector)
             
             if ischar(name) && ~isempty(value)
                 obj.name = name;
@@ -25,22 +24,16 @@ classdef Mass < handle
                 error('The mass must be an numeric scalar');
             end
             
-            if isvector(positionVector)
-                if ~isa(positionVector, 'imf.Expression')
-                    obj.positionVector = imf.Vector(imf.Expression(positionVector));
-                else
-                    obj.positionVector = imf.Vector(positionVector);
-                end
-            elseif isa(point, 'imf.Vector')
+            if isa(positionVector, 'imf.PositionVector')
                 obj.positionVector = positionVector;
             else
-                error('The point must be either an numeric vector or an imf.Vector');
+                error('The point must be an imf.PositionVector');
             end
-            
-            if isa(coordinateSystem, 'imf.CoordinateSystem')
-                obj.coordinateSystem = coordinateSystem;
-            else
-                error('The coordinateSystem must be an imf.CoordinateSystem');
+        end
+        
+        function obj = In(obj, coordinateSystem)
+            if obj.positionVector.coordinateSystem ~= coordinateSystem
+                obj = imf.Mass(obj.name, obj.value, obj.positionVector.In(coordinateSystem));
             end
         end
         

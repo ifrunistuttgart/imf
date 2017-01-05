@@ -31,6 +31,10 @@ while isempty(chain) || chain(end).from ~= from
             elseif t.from == curto && t.to ~= chain(end).to
                 chain(end+1) = t';
             end
+            
+            if chain(end).from == from
+                break;
+            end
         end
         
     else

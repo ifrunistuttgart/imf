@@ -5,42 +5,28 @@ classdef Force
     properties(SetAccess = 'private')
         name
         value@imf.Vector
-        positionVector@imf.Vector
-        coordinateSystem@imf.CoordinateSystem
+        positionVector@imf.PositionVector
     end
     
     methods
-        function obj = Force(name, value, positionVector, coordinateSystem)
+        function obj = Force(name, value, positionVector)
             
             if ischar(name) && ~isempty(value)
                 obj.name = name;
             end
             
-            if isvector(value)
-                obj.value = imf.Vector(value);
-            elseif isa(value, 'imf.Vector')
+            if isa(value, 'imf.Vector')
                 obj.value = value;
             else
-                error('The force must be either an numeric or symbolic vector or an imf.Vector');
+                error('The force must be an imf.Vector');
             end            
             
-            if isnumeric(positionVector) && isvector(positionVector)
-                if ~isa(positionVector, 'imf.Expression')
-                    obj.positionVector = imf.Vector(imf.Expression(positionVector));
-                else
-                    obj.positionVector = imf.Vector(positionVector);
-                end
-            elseif isa(positionVector, 'imf.Vector')
+            if isa(positionVector, 'imf.PositionVector')
                 obj.positionVector = positionVector;
             else
-                error('The pointOfApplication must be either an numeric vector or an imf.Vector');
+                error('The point of application must be an imf.PositionVector');
             end
             
-            if isa(coordinateSystem, 'imf.CoordinateSystem')
-                obj.coordinateSystem = coordinateSystem;
-            else
-                error('The coordinateSystem must be an imf.CoordinateSystem');
-            end
         end
     end
     
