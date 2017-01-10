@@ -20,13 +20,18 @@
 %    License along with ACADO Toolkit; if not, write to the Free Software
 %    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-classdef Matrix < imf.VectorspaceElement    
+classdef Matrix < imf.VectorspaceElement
     properties
-       matrixIsPrinted=0;
+        matrixIsPrinted=0;
+        coordinateSystem@imf.CoordinateSystem
+    end
+    
+    properties(SetAccess = 'protected')
+        representation = []
     end
     
     methods
-        function obj = Matrix(val)
+        function obj = Matrix(val, coordinateSystem)
             if nargin > 0
                 global IMF_;
                 
@@ -36,12 +41,38 @@ classdef Matrix < imf.VectorspaceElement
                     
                     obj.items = val;
                     
+                    if isa(coordinateSystem, 'imf.CoordinateSystem')
+                        obj.coordinateSystem = coordinateSystem;
+                    else
+                        error('The coordinateSystem must be an imf.CoordinateSystem');
+                    end
+                    
                 else
                     error('Matrix expects a numeric value');
                     
                 end
             end
-        end         
+        end
+        
+        function out = In(obj, coordinateSystem)
+            if obj.coordinateSystem ~= coordinateSystem
+                for i=1:length(obj.representation)
+                    if obj.representation{i}.coordinateSystem == coordinateSystem
+                        out = obj.representation{i}.obj;
+                    end
+                end
+            end            
+            
+            if obj.coordinateSystem ~= coordinateSystem
+                error('Not yet implemented.');
+                T = getTransformation(obj.coordinateSystem, coordinateSystem);
+                items = T.rotation.expr * obj.items';
+                out = imf.Vector(items, coordinateSystem);
+                obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
+            else
+                out = obj;
+            end
+        end
     end
     
 end

@@ -697,7 +697,6 @@ classdef Expression < handle
                 
                 out(i) = eval(d);
             end
-            out = eval(out);
         end
         
         function matlabFunction(obj, filename)

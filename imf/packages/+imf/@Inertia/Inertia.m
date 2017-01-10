@@ -3,38 +3,41 @@ classdef Inertia
     %   Detailed explanation goes here
     
     properties
+        name
         value@imf.Matrix
         attitudeVector@imf.Vector
-        coordinateSystem@imf.CoordinateSystem
+        origin@imf.PositionVector
     end
     
     methods
-        function obj = Inertia(value, attitudeVector, coordinateSystem)
-            if ismatrix(value)
-                obj.value = imf.Matrix(value);
-            elseif isa(inertia, 'imf.Matrix')
-                obj.value = value;
-            else
-                error('The inertia must be either an numeric or symbolic matrix or an imf.Vector');
+        function obj = Inertia(name, value, attitudeVector, origin)
+            
+            if ischar(name) && ~isempty(value)
+                obj.name = name;
             end
             
+            if isa(value, 'imf.Matrix')
+                obj.value = value;
+            else
+                error('The inertia must be an imf.Matrix');
+            end            
             
-            if isvector(attitudeVector)
-                if ~isa(attitudeVector, 'imf.Expression')
-                    obj.attitudeVector = imf.Vector(imf.Expression(attitudeVector));
-                else
-                    obj.attitudeVector = imf.Vector(attitudeVector);
-                end
-            elseif isa(attitudeVector, 'imf.Vector')
+            if isa(attitudeVector, 'imf.Vector')
                 obj.attitudeVector = attitudeVector;
             else
                 error('The attitudeVector must be either an numeric vector or an imf.Vector');
             end
             
-            if isa(coordinateSystem, 'imf.CoordinateSystem')
-                obj.coordinateSystem = coordinateSystem;
+            if nargin < 4
+                obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
             else
-                error('The coordinateSystem must be an imf.CoordinateSystem');
+                obj.origin = origin;
+            end
+        end
+        
+        function obj = In(obj, coordinateSystem)
+            if obj.value.coordinateSystem ~= coordinateSystem || obj.attitudeVector.coordinateSystem ~= coordinateSystem
+                obj = imf.Inertia(obj.name, obj.value.In(coordinateSystem), obj.attitudeVector.In(coordinateSystem), obj.origin.In(coordinateSystem));
             end
         end
     end

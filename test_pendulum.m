@@ -1,6 +1,5 @@
 clear all
 close all
-clc
 
 %%
 g = [0 -9.81 0]';
@@ -24,12 +23,11 @@ Parameter m1 l
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass('m1', m1, [sin(q1)*l,-cos(q1)*l,0]', I));
+m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*l,-cos(q1)*l,0]', I)));
 
 %%
 model = m.Compile();
 model.matlabFunction('model');
-
 
 %%
 m1v = 0.1;
@@ -45,14 +43,6 @@ figure
 grid on
 hold on
 plot(tsol, ysol)
-
-%%
-visualize(m, {q1, m1, l}, [ysol(1,1), m1v, lv], 'axis', [-2 2 -2 2 -2 2], 'view', [0 90])
-pause on
-for i=1:length(ysol)
-    visualize(m, {q1, m1, l}, [ysol(i,1), m1v, lv], 'axis', [-2 2 -2 2 -2 2], 'view', [0 90]);
-    pause(0.1)
-end
 
 %%
 g = norm(g);
@@ -71,7 +61,7 @@ hold on
 plot(tval, yval)
 
 %%
-if all(tval == tsol) || all(all(abs(yval-ysol) < 1e-6))
+if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))
     disp('Test ran successfully.')
 else
     error('Test failed.')

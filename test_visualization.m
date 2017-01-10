@@ -1,6 +1,5 @@
 clear all
 close all
-clc
 
 %%
 g = [0 0 9.81]';
@@ -73,7 +72,7 @@ plot(tsol, ysol(:,4:6))
 legend('dq1', 'dq2', 'dq3')
 
 limits = [-4 4 -2 2 -.5 4];
-fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(1,1), ysol(1,2), ysol(1,3), m1v, m2v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
+fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(1,1), ysol(1,2), ysol(1,3), m1v, m2v, m3v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
 
 %%
 prompt = 'Do you want to create a animate? (y/n) ';
@@ -82,15 +81,11 @@ if ~strcmp(s, 'y')
     return;
 end
 
-if ishandle(fh)
-    close fh
-end
-
 dt = max(tspan) / length(tspan);
-fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(1,1), ysol(1,2), ysol(1,3), m1v, m2v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
+fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(1,1), ysol(1,2), ysol(1,3), m1v, m2v, m3v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
 pause on
 for i=1:length(ysol)
-    fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(i,1), ysol(i,2), ysol(i,3), m1v, m2v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
+    fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(i,1), ysol(i,2), ysol(i,3), m1v, m2v, m3v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
     pause(dt);
 end
 
@@ -101,16 +96,11 @@ if ~strcmp(s, 'y')
     return;
 end
 
-if ishandle(fh)
-    close fh
-end
-
-
-v = VideoWriter('2mass_pendulum.mp4', 'MPEG-4');
+v = VideoWriter('visualization.mp4', 'MPEG-4');
 v.FrameRate = 1/dt;
 open(v)
 for i=1:length(ysol)
-    visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(i,1), ysol(i,2), ysol(i,3), m1v, m2v, m2v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
+    visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(i,1), ysol(i,2), ysol(i,3), m1v, m2v, m3v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
     frame = getframe;
     writeVideo(v,frame);
 end

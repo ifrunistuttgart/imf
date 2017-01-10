@@ -1,6 +1,5 @@
 clear all
 close all
-clc
 
 %%
 if ~exist('BEGIN_IMF','file'),
@@ -20,9 +19,9 @@ Parameter k Izz
 
 %%
 m = imf.Model(I);
-m.Add(imf.Inertia([0 0 0;0 0 0;0 0 Izz], [0 0 q1]', I));
+m.Add(imf.Inertia('I', imf.Matrix([0 0 0;0 0 0;0 0 Izz], I), imf.Vector([0 0 q1]', I)));
 % Be aware of the sign of the Moment induced by the spring
-m.Add(imf.Moment([0 0 -k*q1]', [0 0 q1]', I)); 
+m.Add(imf.Moment('M1', imf.Vector([0 0 -k*q1]', I), imf.Vector([0 0 q1]', I))); 
 
 %%
 model = m.Compile();
@@ -59,7 +58,7 @@ hold on
 plot(tval, yval)
 
 %%
-if all(tval == tsol) || all(all(abs(yval-ysol) < 1e-6))
+if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))
     disp('Test ran successfully.')
 else
     error('Test failed.')

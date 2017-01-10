@@ -1,6 +1,5 @@
 clear all
 close all
-clc
 
 %%
 g = [0 -9.81 0]';
@@ -24,7 +23,7 @@ Parameter l ll m1
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass(m1, [sin(q1)*ll*l,-cos(q1)*ll*l,0]', I));
+m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*ll*l,-cos(q1)*ll*l,0]', I)));
 
 %%
 model = m.Compile();
@@ -63,7 +62,7 @@ hold on
 plot(tval, yval)
 
 %%
-if all(tval == tsol) || all(all(abs(yval-ysol) < 1e-6))
+if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))
     disp('Test ran successfully.')
 else
     error('Test failed.')
