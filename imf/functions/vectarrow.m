@@ -1,47 +1,55 @@
-function vectarrow(p0, p1, LineSpec)
-%Arrowline 3-D vector plot.
-%   vectarrow(p0,p1) plots a line vector with arrow pointing from point p0
-%   to point p1. The function can plot both 2D and 3D vector with arrow
-%   depending on the dimension of the input
-%
-%   Example:
-%       3D vector
-%       p0 = [1 2 3];   % Coordinate of the first point p0
-%       p1 = [4 5 6];   % Coordinate of the second point p1
-%       vectarrow(p0,p1)
-%
-%       2D vector
-%       p0 = [1 2];     % Coordinate of the first point p0
-%       p1 = [4 5];     % Coordinate of the second point p1
-%       vectarrow(p0,p1)
-%
-%   See also Vectline
+function vectarrow(str, p0, p1, LineSpec)
 
-%   Rentian Xiong 4-18-05
-%   $Revision: 1.0
+alpha = 0.03;
+beta = 0.1;
 
-  if max(size(p0))==3
-      if max(size(p1))==3
-          x0 = p0(1);
-          y0 = p0(2);
-          z0 = p0(3);
-          x1 = p1(1);
-          y1 = p1(2);
-          z1 = p1(3);
-          plot3([x0;x1],[y0;y1],[z0;z1], LineSpec);   % Draw a line between p0 and p1
-          
-          p = p1-p0;
-          alpha = 0.1;  % Size of arrow head relative to the length of the vector
-          beta = 0.1;  % Width of the base of the arrow head relative to the length
-          
-          hu = [x1-alpha*(p(1)+beta*(p(2)+eps)); x1; x1-alpha*(p(1)-beta*(p(2)+eps))];
-          hv = [y1-alpha*(p(2)-beta*(p(1)+eps)); y1; y1-alpha*(p(2)+beta*(p(1)+eps))];
-          hw = [z1-alpha*p(3);z1;z1-alpha*p(3)];
-          
-          plot3(hu(:), hv(:), hw(:), LineSpec)  % Plot arrow head
-      else
-          error('p0 and p1 must have the same dimension')
-      end
-  else
-      error('this function only accepts 3D vector')
-  end
+if max(size(p0))==3
+    if max(size(p1))==3
+        
+        p = p1 - p0;
+        
+        if norm(p) == 0
+            return;
+        end
+        
+        o = p / norm(p) * beta;
+        
+        plot3([p0(1);p1(1) - o(1)],...
+            [p0(2);p1(2) - o(2)],...
+            [p0(3);p1(3) - o(3)], LineSpec, 'LineWidth', 2);
+        
+        [hx,hy,hz] = cylinder([1 0]);
+        hx = alpha * hx;
+        hy = alpha * hy;
+        hz = beta * (hz - 1);
+        
+        T = vrrotvec2mat(vrrotvec([0;0;1], p));
+        
+        for i=1:size(hx,1)
+            for j=1:size(hx,2)
+                hp = [hx(i,j); hy(i,j); hz(i,j)];
+                hp = T * hp;
+                
+                
+                hx(i,j) = hp(1);
+                hy(i,j) = hp(2);
+                hz(i,j) = hp(3);
+            end
+        end
+        
+        hx = hx + p1(1);
+        hy = hy + p1(2);
+        hz = hz + p1(3);
+        
+        surf(hx, hy, hz, 'LineStyle', 'none', 'FaceColor', LineSpec);
+        
+        text(p0(1) + 0.5*p(1), ...
+            p0(2) + 0.5*p(2), ...
+            p0(3) + 0.5*p(3), ...
+            str, 'Color',LineSpec);
+    else
+        error('p0 and p1 must have the same dimension')
+    end
+else
+    error('this function only accepts 3D vector')
+end

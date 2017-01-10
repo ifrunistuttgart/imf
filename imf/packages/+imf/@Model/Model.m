@@ -95,19 +95,11 @@ classdef Model < handle
                 
             elseif isa(external, 'imf.Moment')
                 
-                if external.coordinateSystem ~= obj.inertialSystem
-                    error('Not yet implemented.');
-                else
-                    obj.moments(end+1) = external;
-                end
+                obj.moments(end+1) = external.In(obj.inertialSystem);
                 
             elseif isa(external, 'imf.Inertia')
                 
-                if external.coordinateSystem ~= obj.inertialSystem
-                    error('Not yet implemented.');
-                else
-                    obj.inertias(end+1) = external;
-                end
+                obj.inertias(end+1) = external.In(obj.inertialSystem);
                 
             elseif isa(external, 'imf.Mass')
                 

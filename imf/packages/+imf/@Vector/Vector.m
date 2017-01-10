@@ -39,6 +39,10 @@ classdef Vector < imf.VectorspaceElement
                     IMF_.count_vector = IMF_.count_vector+1;
                     obj.name = strcat('imfdata_v', num2str(IMF_.count_vector));
                     
+                    if isa(val, 'numeric')
+                        val = imf.Expression(val);
+                    end
+                    
                     [m n] = size(val);
                     
                     if (m == 1)

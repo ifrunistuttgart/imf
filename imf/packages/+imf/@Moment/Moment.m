@@ -2,39 +2,44 @@ classdef Moment
     %MOMENT Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties        
+    properties(SetAccess = 'private')
+        name
         value@imf.Vector
         attitudeVector@imf.Vector
-        coordinateSystem@imf.CoordinateSystem
+        origin@imf.PositionVector
     end
     
     methods
         
-        function obj = Moment(value, attitudeVector, coordinateSystem)
-            if isvector(value)
-                obj.value = imf.Vector(value);
-            elseif isa(force, 'imf.Vector')
-                obj.value = value;
-            else
-                error('The moment must be either an numeric or symbolic vector or an imf.Vector');
+        function obj = Moment(name, value, attitudeVector, origin)
+            
+            if ischar(name) && ~isempty(value)
+                obj.name = name;
             end
             
-            if isvector(attitudeVector)
-                if ~isa(attitudeVector, 'imf.Expression')
-                    obj.attitudeVector = imf.Vector(imf.Expression(attitudeVector));
-                else
-                    obj.attitudeVector = imf.Vector(attitudeVector);
-                end
-            elseif isa(force, 'imf.Vector')
+            if isa(value, 'imf.Vector')
+                obj.value = value;
+            else
+                error('The moment must be an imf.Vector');
+            end
+            
+            if isa(attitudeVector, 'imf.Vector')
                 obj.attitudeVector = attitudeVector;
             else
-                error('The attitudeVector must be either an numeric vector or an imf.Vector');
+                error('The attitudeVector must be an imf.Vector');
             end
-                        
-            if isa(coordinateSystem, 'imf.CoordinateSystem')
-                obj.coordinateSystem = coordinateSystem;
+            
+            if nargin < 4
+                obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
             else
-                error('The coordinateSystem must be an imf.CoordinateSystem');
+                obj.origin = origin;
+            end
+            
+        end
+        
+        function obj = In(obj, coordinateSystem)
+            if obj.value.coordinateSystem ~= coordinateSystem || obj.attitudeVector.coordinateSystem ~= coordinateSystem
+                obj = imf.Moment(obj.name, obj.value.In(coordinateSystem), obj.attitudeVector.In(coordinateSystem), obj.origin.In(coordinateSystem));
             end
         end
         

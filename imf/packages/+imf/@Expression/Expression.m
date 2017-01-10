@@ -678,7 +678,7 @@ classdef Expression < handle
                 for j = 1:length(IMF_.helper.param)
                     % replace variable if it does not have a leading or
                     % trailing alphanumeric symbol
-                    ex = regexprep(ex, ['(?<!(?:[a-z]))(' IMF_.helper.param{j}.name ')(?!(?:[a-z]+))'], ['imfvar' num2str(j)]);
+                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9]))(' IMF_.helper.param{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imfvar' num2str(j)]);
                 end
                 
                 ex = eval(ex);
