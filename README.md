@@ -51,53 +51,49 @@ Gravity(value, coordinateSystem)
 
 ##### Constructor #####
 ```matlab
-Mass(name, value, positionVector, coordinateSystem)
+Mass(name, value, positionVector)
 ```
-*name:* A name for this mass, which is used for visualization.
+*name:* A name for this external used by the visualize function.
 
 *value:* A scalar value or an [imf.Parameter](#imfparameter) defining the mass of a mass point.
 
-*positionVector:* An vector or an [imf.Vector](#imfvector) defining the position vector of the force induced by the mass and the [imf.Gravity](#imfgravity) given in *coordinateSystem*.
-
-*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *positionVector* is given in.
+*positionVector:* An [imf.PositionVector](#imfpositionvector) defining the position vector of the force induced by the mass and the [imf.Gravity](#imfgravity).
 
 #### imf.Force ####
 
 ##### Constructor #####
 ```matlab
-Force(name, value, positionVector, coordinateSystem)
+Force(name, value, positionVector)
 ```
-*name:* A name for this mass, which is used for visualization.
+*name:* A name for this external used by the visualize function.
 
-*value:* A vector or an [imf.Vector](#imfvector) defining the magnitude and the direction of a force given in *coordinateSystem*.
+*value:* An [imf.Vector](#imfvector) defining the magnitude and the direction of a force.
 
-*positionVector:* An vector or an [imf.Vector](#imfvector) describing the position vector of the force *value* given in *coordinateSystem*.
-
-*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* and *positionVector* are given in.
+*positionVector:* An [imf.PositionVector](#imfpositionvector) describing the position vector of the force *value*.
 
 #### imf.Inertia ####
 
 ##### Constructor #####
 ```matlab
-Inertia(value, attitudeVector, coordinateSystem)
+Inertia(name, value, attitudeVector)
 ```
-*value:* A matrix or an [imf.Matrix](#imfmatrix) giving the moment of inertia tensor w.r.t. the origin and in the axes of *coordinateSystem*.
+*name:* A name for this external used by the visualize function.
 
-*attitudeVector:* An vector or an [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates given in *coordinateSystem*.
+*value:* An [imf.Matrix](#imfmatrix) giving the moment of inertia tensor w.r.t. the origin.
 
-*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* and *attitudeVector* are given in.
+*attitudeVector:* An [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates.
 
 #### imf.Moment ####
 
 ##### Constructor #####
 ```matlab
-Moment(value, attitudeVector, coordinateSystem)
+Moment(name, value, attitudeVector)
 ```
-*value:* A vector or an [imf.Vector](#imfvector) defining the magnitude and the axis of a moment given in *coordinateSystem*.
+*name:* A name for this external used by the visualize function.
 
-*attitudeVector:* An vector or an [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates given in *coordinateSystem*.
+*value:* An [imf.Vector](#imfvector) defining the magnitude and the axis of a moment.
 
-*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* and *attitudeVector* are given in.
+*attitudeVector:* An [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates.
 
 #### imf.Expression ####
 
@@ -110,6 +106,7 @@ matlabFunction(filename)
 Reduces the order of the differential function and generates two files *filenameM* and *filenameF* giving a first order differential equation in mass-matrix form M*xdot = F
 
 #### imf.Vector ####
+#### imf.PositionVector ####
 #### imf.Matrix ####
 #### imf.CoordinateSystem ####
 
@@ -129,7 +126,7 @@ visualize(model, variables, values, varargin)
 - 'axis': Axis limits for x, y and z axis passed as a vector.
 - 'view': View angles for azimuth and elevation as a vector.
 - 'scale': A scalar scale value to adjust arrow lengths (not fully tested).
-- 'revz': A switch to reverse the z axis.
+- 'revz': A switch to reverse the z and y axis.
 
 ```matlab
 % EXAMPLE USAGE:  
@@ -138,6 +135,31 @@ visualize(m, {q1, q2, m1, m2, l}, [ysol(i,1), ysol(i,2), m1v, m2v, lv], 'axis', 
 
 
 ## Examples ##
+
+You find more complex and complete examples packaged with the framework. Those examples start with *test_*. 
+
+### Header ###
+This is the recommended way of adding the framework to your PATH variable.
+
+```matlab
+if ~exist('BEGIN_IMF','file'),
+    addpath( genpath([pwd filesep 'imf']) )
+    if ~exist('BEGIN_IMF','file'),
+        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
+            'the library as a sub folder of the current working directory.');
+    end
+end
+
+%%
+BEGIN_IMF
+
+%%
+% >>> Your code goes here <<<
+%%
+
+END_IMF
+```
+
 ### Pendulum ###
 ```matlab
 GeneralizedCoordinate q1
@@ -146,7 +168,7 @@ Variable m1 l
 
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass(m1, [sin(q1)*l,-cos(q1)*l,0]', I));
+m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*l,-cos(q1)*l,0]', I)));
 ```
 
 ### Torsion Pendulum ###
@@ -158,7 +180,7 @@ CoordinateSystem I
 Variable k Izz
 
 m = imf.Model(I);
-m.Add(imf.Inertia([0 0 0;0 0 0;0 0 Izz], [0 0 q1]', I));
+m.Add(imf.Inertia('I', imf.Matrix([0 0 0;0 0 0;0 0 Izz], I), imf.Vector([0 0 q1]', I)));
 % Be aware of the sign of the Moment induced by the spring
-m.Add(imf.Moment([0 0 -k*q1]', [0 0 q1]', I)); 
+m.Add(imf.Moment('M1', imf.Vector([0 0 -k*q1]', I), imf.Vector([0 0 q1]', I))); 
 ```
