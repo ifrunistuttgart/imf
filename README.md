@@ -105,6 +105,7 @@ matlabFunction(filename)
 ```
 Reduces the order of the differential function and generates two files *filenameM* and *filenameF* giving a first order differential equation in mass-matrix form M*xdot = F
 
+#### imf.Transformation ####
 #### imf.Vector ####
 #### imf.PositionVector ####
 #### imf.Matrix ####
