@@ -22,19 +22,11 @@ Parameter m1 m2 m3 l
 
 %%
 % Transformation from System I to System c1
-T21 = imf.Transformation(I,c1);
-T21.rotation = imf.RotationMatrix.T2(q1);
-% The offset of the origin of System 2 to System 1
-% with regards to System 1
-T21.offset = imf.Vector([0;0;-l], c1);
+T21 = imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([0;0;-l], c1));
 
 %%
 % Transformation from System c1 to System c2
-T32 = imf.Transformation(c1,c2);
-T32.rotation = imf.RotationMatrix.T2(q2);
-% The offset of the origin of System 2 to System 1
-% with regards to System 1
-T32.offset = imf.Vector([0;0;-l], c2);
+T32 = imf.Transformation(c1, c2, imf.RotationMatrix.T2(q2), imf.Vector([0;0;-l], c2));
 
 %%
 m = imf.Model(I);

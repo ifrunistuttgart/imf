@@ -6,11 +6,11 @@ classdef Transformation < handle
         from@imf.CoordinateSystem
         to@imf.CoordinateSystem
         rotation@imf.RotationMatrix
-        offset@imf.Vector
+        translation@imf.Vector
     end
     
     methods
-        function obj = Transformation(from, to, rotation, offset)
+        function obj = Transformation(from, to, rotation, translation)
             if nargin > 0
                 global IMF_;
                 
@@ -26,8 +26,8 @@ classdef Transformation < handle
                     error('Provide a valid imf.RotationMatrix for rotation.')
                 end
                 
-                if ~isa(offset, 'imf.Vector')
-                    error('Provide a valid imf.Vector for offset.')
+                if ~isa(translation, 'imf.Vector')
+                    error('Provide a valid imf.Vector for translation.')
                 end
                 
                 obj.from = from;
@@ -35,10 +35,10 @@ classdef Transformation < handle
                 obj.rotation = rotation;
                 
                 
-                if offset.coordinateSystem == from
-                    obj.offset = imf.Vector(rotation.expr * -1 * offset.items', to);
+                if translation.coordinateSystem == from
+                    obj.translation = imf.Vector(rotation.expr * -1 * translation.items', to);
                 else
-                    obj.offset = offset;
+                    obj.translation = translation;
                 end
                 
                 IMF_.transformations(end+1) = obj;
@@ -46,35 +46,14 @@ classdef Transformation < handle
         end
         
         function obj = ctranspose(a)
-            obj = imf.Transformation(a.to, a.from, a.rotation', imf.Vector(a.rotation.expr' * -1 * a.offset.items', a.from));
+            obj = imf.Transformation(a.to, a.from, a.rotation', imf.Vector(a.rotation.expr' * -1 * a.translation.items', a.from));
         end
         
         
         function T = HomogeneousMatrix(obj)
             % transrotational transformation
-            T = [obj.rotation.expr obj.offset.items';
+            T = [obj.rotation.expr obj.translation.items';
                 zeros(1, 3)          1];
-        end
-        
-        function texternal = Transform(obj, in)
-            
-            if isa(in, 'imf.Force')
-                name = in.name;
-                force = in.value.In(obj.to);
-                positionVector = in.positionVector.In(obj.to);
-                
-                texternal = imf.Force(name, force, positionVector(1:3));
-            elseif isa(in, 'imf.Mass')
-                name = in.name;
-                mass = in.value;
-                positionVector = in.positionVector.In(obj.to);
-                
-                texternal = imf.Mass(name, mass, positionVector(1:3));
-            elseif isa(in, 'imf.Moment')
-                error('Not yet implemented.')
-            elseif isa(in, 'imf.Inertia')
-                error('Not yet implemented.')
-            end
         end
     end
     

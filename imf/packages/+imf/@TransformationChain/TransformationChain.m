@@ -27,13 +27,6 @@ classdef TransformationChain < handle
             obj.transformations = obj.transformations';
         end
         
-        function texternal = Transform(obj, external)
-            texternal = external;
-            for i=length(obj.transformations):-1:1
-                texternal = obj.transformations(i).Transform(texternal);
-            end
-        end        
-        
         function R = HomogeneousMatrix(obj)
                         
             R = eye(4);
