@@ -36,7 +36,7 @@ classdef RotationMatrix < handle
         end
         
         function r = mtimes(a,b)
-            r = a.expr * a.expr;
+            r = imf.RotationMatrix(a.expr * b.expr);
         end
         
         function out = ctranspose(in)

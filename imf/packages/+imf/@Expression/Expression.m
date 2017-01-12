@@ -657,7 +657,8 @@ classdef Expression < handle
             
             symsex = 'syms';
             for j = 1:length(var)
-                symsex = [symsex ' ' var(j).expr.name '(t)'];
+                %symsex = [symsex ' ' var(j).expr.name '(t)'];
+                symsex = [symsex ' q' num2str(j) '(t)'];
             end
             eval(symsex);
             
@@ -671,8 +672,8 @@ classdef Expression < handle
                 ex = obj(i).expr.toString;
                 
                 for j = 1:length(var)
-                    ex = strrep(ex, ['dot(' var(j).expr.name ')'], ['diff(q' num2str(j) '(t), t)']);
-                    ex = strrep(ex, var(j).expr.name, ['q' num2str(j)]);
+                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9]))(dot\(' var(j).expr.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(q' num2str(j) '(t), t)']);
+                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9]))(' var(j).expr.name ')(?!(?:[a-zA-Z0-9]+))'], ['q' num2str(j)]);
                 end
                 
                 for j = 1:length(IMF_.helper.param)
