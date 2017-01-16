@@ -185,3 +185,48 @@ m.Add(imf.Inertia('I', imf.Matrix([0 0 0;0 0 0;0 0 Izz], I), imf.Vector([0 0 q1]
 % Be aware of the sign of the Moment induced by the spring
 m.Add(imf.Moment('M1', imf.Vector([0 0 -k*q1]', I), imf.Vector([0 0 q1]', I))); 
 ```
+
+### Step-by-Step ###
+
+For this example we are going to model a two-mass pendulum and all steps will be explained. For an illustration of the coordinates chosen, see *documents/two_mass_pendulum.ai*.
+
+For convenience, the Header will be skipped at this point.
+
+1. Define the generalized coordinates, coordinate systems and model parameters
+```matlab
+GeneralizedCoordinate q1 q2
+CoordinateSystem I c1
+Parameter m1 m2 l
+```
+Coordinate q1 describes the angle between the first pole and the inertial coordinate *I* system's z axis.  
+Coordinate q2 describes the angle between the second pole and the *c1* coordinate system's z axis.  
+In this example the pendulum rotates around the y axis of each system and the right-hand rule applies.   Therefore counter-clockwise rotation is positive.  
+The mass of the first pole is described by a point mass at the end of the pole with the free model parameter *m1*. The mass of the second pole is described by *m2*. The length of each pole is *l*.
+
+2. The transformation between coordinate system c1 and I must be defined if any vector is given in a non-inertial coordinate system. Otherwise, the framework would be unable to transform them into the inertial system. A transformation is defined as follows:
+```matlab
+T21 = imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([0;0;-l], c1));
+```
+It is not necessary to store this transformation into a workspace variable as the transformation is stored internally, too.  
+The above code defines a transformation from I to c1 by rotating around the 2-axis (y axis) with q1 (in radians). T1 and T3 are also available as predefined rotations.  
+Additionally, a translational offset between those two systems is defined by the fourth parameter. The offset can be described in the most convenient coordinate system. 
+3. The next step creates a model object which stores all relevant information concerning the dynamic system to be modelled:  
+```matlab
+m = imf.Model(I);
+```
+4. As we are going to add masses to the model, we need a gravitational acceleration to have forces acting on these masses.
+```matlab
+g = [0;0;9.81];
+m.gravity = imf.Gravity(g, I);
+```
+5. Now we are ready to define the masses of the poles (as point masses).
+```matlab
+m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
+m.Add(imf.Mass('m2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
+```
+You just need to define a name (for visualization), the mass (either symbolic of numerical value) and the point of application of this mass in any coordinate system you like.
+6. As a last step, you can now compile the model and export MATLAB functions to files named filenameM.m and filenameF.m resulting in equations in the form of M*x' = F. 
+```matlab
+model = m.Compile();
+model.matlabFunction('filename');
+```
