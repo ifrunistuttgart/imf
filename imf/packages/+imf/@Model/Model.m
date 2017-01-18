@@ -6,8 +6,7 @@ classdef Model < handle
         inertialSystem@imf.CoordinateSystem
         forces@imf.Force vector = imf.Force.empty;
         moments@imf.Moment vector = imf.Moment.empty;
-        inertias@imf.Inertia vector = imf.Inertia.empty;
-        masses@imf.Mass vector = imf.Mass.empty;
+        bodies@imf.Body vector = imf.Body.empty;
     end
     
     properties
@@ -37,18 +36,32 @@ classdef Model < handle
             
             gc = genCoordinates;
             
-            system = imf.Expression.empty(length(obj.masses),0);
+            system = imf.Expression.empty(length(obj.bodies),0);
             
-            for i=1:length(obj.masses)
-                m = obj.masses(i);
-                jac = jacobian(m.positionVector.items, gc);
-                dr = functionalDerivative(m.positionVector.items, gc);
+            for i=1:length(obj.bodies)
+                b = obj.bodies(i);
+                m = b.mass;
+                jac = jacobian(b.positionVector.items, gc);
+                dr = functionalDerivative(b.positionVector.items, gc);
                 ddr = functionalDerivative(dr, gc);
                 
                 if isempty(system)
-                    system = m.value*jac'*ddr';
+                    system = m*jac'*ddr';
                 else
-                    system = system + m.value*jac'*ddr';
+                    system = system + m*jac'*ddr';
+                end
+                
+                if ~isempty(b.inertia)
+                    I = b.inertia;
+                    jac = jacobian(b.attitudeVector.items, gc);
+                    dg = functionalDerivative(b.attitudeVector.items, gc);
+                    ddg = functionalDerivative(dg, gc);
+                    
+                    if isempty(system)
+                        system = jac'*(I.items*ddg' + cross(dg,I.items*dg));
+                    else
+                        system = system + jac'*(I.items*ddg' + cross(dg,I.items*dg')');
+                    end
                 end
             end
             
@@ -73,19 +86,6 @@ classdef Model < handle
                     system = system - jac'*M.value.items';
                 end
             end
-            
-            for i=1:length(obj.inertias)
-                I = obj.inertias(i);
-                jac = jacobian(I.attitudeVector.items, gc);
-                dg = functionalDerivative(I.attitudeVector.items, gc);
-                ddg = functionalDerivative(dg, gc);
-                
-                if isempty(system)
-                    system = jac'*(I.value*ddg' + cross(dg,I.value*dg));
-                else
-                    system = system + jac'*(I.value.items*ddg' + cross(dg,I.value.items*dg')');
-                end
-            end
         end
         
         function Add(obj, external)
@@ -96,18 +96,14 @@ classdef Model < handle
             elseif isa(external, 'imf.Moment')
                 
                 obj.moments(end+1) = external.In(obj.inertialSystem);
+                                
+            elseif isa(external, 'imf.Body')
                 
-            elseif isa(external, 'imf.Inertia')
-                
-                obj.inertias(end+1) = external.In(obj.inertialSystem);
-                
-            elseif isa(external, 'imf.Mass')
-                
-                obj.masses(end+1) = external.In(obj.inertialSystem);
+                obj.bodies(end+1) = external.In(obj.inertialSystem);
                 
                 if ~isempty(obj.gravity)
-                    m = obj.masses(end);
-                    obj.forces(end+1) = imf.Force(['F' m.name], imf.Vector(m.value*obj.gravity.items, m.positionVector.coordinateSystem), m.positionVector);
+                    b = obj.bodies(end);
+                    obj.forces(end+1) = imf.Force(['F' b.name], imf.Vector(b.mass*obj.gravity.items, m.positionVector.coordinateSystem), m.positionVector);
                 end
                 
             else

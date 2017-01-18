@@ -14,6 +14,7 @@ classdef PositionVector < imf.Vector
                 for i=1:length(obj.representation)
                     if obj.representation{i}.coordinateSystem == coordinateSystem
                         out = obj.representation{i}.obj;
+                        return;
                     end
                 end
                 

@@ -1,4 +1,4 @@
-function vectarrow(str, p0, p1, LineSpec)
+function handles = vectarrow(ah, str, p0, p1, LineSpec)
 
 alpha = 0.03;
 beta = 0.1;
@@ -14,7 +14,7 @@ if max(size(p0))==3
         
         o = p / norm(p) * beta;
         
-        plot3([p0(1);p1(1) - o(1)],...
+        handles(end+1) = plot3(ah, [p0(1);p1(1) - o(1)],...
             [p0(2);p1(2) - o(2)],...
             [p0(3);p1(3) - o(3)], LineSpec, 'LineWidth', 2);
         
@@ -41,9 +41,9 @@ if max(size(p0))==3
         hy = hy + p1(2);
         hz = hz + p1(3);
         
-        surf(hx, hy, hz, 'LineStyle', 'none', 'FaceColor', LineSpec);
+        handles(end+1) = surf(ah, hx, hy, hz, 'LineStyle', 'none', 'FaceColor', LineSpec);
         
-        text(p0(1) + 0.5*p(1), ...
+        handles(end+1) = text(ah, p0(1) + 0.5*p(1), ...
             p0(2) + 0.5*p(2), ...
             p0(3) + 0.5*p(3), ...
             str, 'Color',LineSpec);

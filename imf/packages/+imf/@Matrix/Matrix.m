@@ -64,10 +64,9 @@ classdef Matrix < imf.VectorspaceElement
             end            
             
             if obj.coordinateSystem ~= coordinateSystem
-                error('Not yet implemented.');
                 T = getTransformation(obj.coordinateSystem, coordinateSystem);
                 items = T.rotation.expr * obj.items';
-                out = imf.Vector(items, coordinateSystem);
+                out = imf.Matrix(items, coordinateSystem);
                 obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
             else
                 out = obj;

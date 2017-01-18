@@ -1,43 +1,33 @@
-classdef Inertia
-    %FORCE Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Inertia < imf.Matrix
     
-    properties
-        name
-        value@imf.Matrix
-        attitudeVector@imf.Vector
-        origin@imf.PositionVector
+    properties(SetAccess = 'public')
+        body@imf.Body
     end
     
     methods
-        function obj = Inertia(name, value, attitudeVector, origin)
-            
-            if ischar(name) && ~isempty(value)
-                obj.name = name;
-            end
-            
-            if isa(value, 'imf.Matrix')
-                obj.value = value;
-            else
-                error('The inertia must be an imf.Matrix');
-            end            
-            
-            if isa(attitudeVector, 'imf.Vector')
-                obj.attitudeVector = attitudeVector;
-            else
-                error('The attitudeVector must be either an numeric vector or an imf.Vector');
-            end
-            
-            if nargin < 4
-                obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
-            else
-                obj.origin = origin;
-            end
+        function obj = Inertia(val, coordinateSystem)            
+            obj = obj@imf.Matrix(val, coordinateSystem);
         end
         
-        function obj = In(obj, coordinateSystem)
-            if obj.value.coordinateSystem ~= coordinateSystem || obj.attitudeVector.coordinateSystem ~= coordinateSystem
-                obj = imf.Inertia(obj.name, obj.value.In(coordinateSystem), obj.attitudeVector.In(coordinateSystem), obj.origin.In(coordinateSystem));
+        function out = In(obj, coordinateSystem)
+            if obj.coordinateSystem ~= coordinateSystem
+                for i=1:length(obj.representation)
+                    if obj.representation{i}.coordinateSystem == coordinateSystem
+                        out = obj.representation{i}.obj;
+                        return;
+                    end
+                end
+            end            
+            
+            if obj.coordinateSystem ~= coordinateSystem
+                T = getTransformation(obj.coordinateSystem, coordinateSystem);
+                a = obj.body.positionVector.In(coordinateSystem).items;
+                at = [0 -a(3) a(2); a(3) 0 -a(1); -a(2) a(1) 0];
+                items = T.rotation.expr * obj.items' + obj.body.mass*at'*at;
+                out = imf.Inertia(items, coordinateSystem);
+                obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
+            else
+                out = obj;
             end
         end
     end

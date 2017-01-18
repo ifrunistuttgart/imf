@@ -1,7 +1,7 @@
 function out = visualize(model, variables, values, varargin)
 
 global IMF_
-persistent fh
+persistent fh ah handles
 
 if nargin < 1 || ~isa(model, 'imf.Model')
     error('Please provide a valid model.');
@@ -12,54 +12,61 @@ if length(variables) ~= length(values)
 end
 
 for i=1:length(variables)
-    
     if isa(variables{i}, 'imf.Dot') && regexp(variables{i}.toString, '^dot\(([a-zA-z0-9]+)\)')
         d = variables{i}.toString;
         var = ['d' d(5:end-1)];
         eval([var '=' num2str(values(i)) ';']);
     else
-    eval([variables{i}.name '=' num2str(values(i)) ';']);
-    end    
-end
-
-if isempty(fh) || ~ishandle(fh)
-    fh = figure;
-end
-
-figure(fh)
-clf(fh)
-grid on
-hold on
-axis vis3d
-
-scale = 1;
-
-if nargin >= 4
-    for i=1:2:nargin-3
-        if strcmp(varargin(i), 'axis')
-            axis(varargin{i+1})
-        end
-        
-        if strcmp(varargin(i), 'view')
-            view(varargin{i+1})
-        end
-        
-        if strcmp(varargin(i), 'scale')
-            scale = varargin{i+1};
-        end
-        
-        if strcmp(varargin(i), 'revz')
-            if varargin{i+1}
-                set(gca,'zdir','reverse')
-                set(gca,'ydir','reverse')
-            end
-        end
+        eval([variables{i}.name '=' num2str(values(i)) ';']);
     end
 end
 
-xlabel('x')
-ylabel('y')
-zlabel('z')
+scale = 1;
+showGrid = 0;
+revZ = 0;
+axisv = 0;
+viewv = 0;
+
+if isempty(fh) || ~ishandle(fh)
+    
+    if nargin >= 4
+        for i=1:2:nargin-3
+            if strcmp(varargin(i), 'axis')
+                axisv = varargin{i+1};
+            end
+            
+            if strcmp(varargin(i), 'view')
+                viewv = varargin{i+1};
+            end
+            
+            if strcmp(varargin(i), 'scale')
+                scale = varargin{i+1};
+            end
+            
+            if strcmp(varargin(i), 'revz')
+                if varargin{i+1}
+                    revZ = 1;
+                end
+            end
+            
+            if strcmp(varargin(i), 'grid')
+                if varargin{i+1}
+                    showGrid = 1;
+                end
+            end
+        end
+    end
+    
+    fh = figure;
+    ah = visPlotArea( fh, showGrid, revZ, axisv, viewv );
+end
+
+figure(fh)
+
+for i=1:length(handles)
+    delete(handles(i));
+end
+handles = [];
 
 for i=1:length(IMF_.helper.cs)
     
@@ -76,21 +83,21 @@ for i=1:length(IMF_.helper.cs)
     origin = eval(origin.items, 'caller');
     x = eval(x.items, 'caller');
     y = eval(y.items, 'caller');
-    z = eval(z.items, 'caller');    
-        
-    plot3(origin(1), origin(2), origin(3), '.k')
-    text(origin(1)-.1, origin(2)-.1, origin(3)-.1, IMF_.helper.cs{i}.name);
+    z = eval(z.items, 'caller');
     
-    plot3([origin(1) x(1)], [origin(2) x(2)], [origin(3) x(3)], '-g')
-    plot3([origin(1) y(1)], [origin(2) y(2)], [origin(3) y(3)], '-r')
-    plot3([origin(1) z(1)], [origin(2) z(2)], [origin(3) z(3)], '-b')
+    for j=1:length(ah)
+        hs =  visCoordinateSystems( ah(j), IMF_.helper.cs{i}.name, origin, x, y, z );
+        handles = [handles; hs'];
+    end
 end
 
-for i=1:length(model.masses)    
-    positionVector = eval(model.masses(i).positionVector.items, 'caller');
+for i=1:length(model.bodies)
+    positionVector = eval(model.bodies(i).positionVector.items, 'caller');
     
-    plot3(positionVector(1), positionVector(2), positionVector(3), '.b', 'MarkerSize', 25)
-    text(positionVector(1)+0.1, positionVector(2)+0.1, positionVector(3)+0.1, model.masses(i).name, 'Color', 'blue');
+    for j=1:length(ah)
+        handles(end+1) = plot3(ah(j), positionVector(1), positionVector(2), positionVector(3), '.b', 'MarkerSize', 25);
+        handles(end+1) = text(ah(j), positionVector(1)+0.1, positionVector(2)+0.1, positionVector(3)+0.1, model.bodies(i).name, 'Color', 'blue');
+    end
 end
 
 for i=1:length(model.forces)
@@ -98,7 +105,9 @@ for i=1:length(model.forces)
     value = eval(model.forces(i).value.items, 'caller');
     positionVector = eval(model.forces(i).positionVector.items, 'caller');
     
-    vectarrow(model.forces(i).name, positionVector, positionVector + scale*value, 'r')
+    for j=1:length(ah)
+        handles(end+1) = vectarrow(ah(j), model.forces(i).name, positionVector, positionVector + scale*value, 'r');
+    end
 end
 
 for i=1:length(model.moments)
@@ -118,7 +127,9 @@ for i=1:length(model.moments)
         value(1,j) = eval(item, 'caller');
     end
     origin = eval(model.moments(i).origin.items, 'caller');
-    vectarrow(model.forces(i).name, origin, origin + value, 'm')
+    for j=1:length(ah)
+        handles(end+1) = vectarrow(ah(j), model.moments(i).name, origin, origin + value, 'm');
+    end
 end
 
 out = fh;
