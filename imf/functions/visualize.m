@@ -24,8 +24,8 @@ end
 scale = 1;
 showGrid = 0;
 revZ = 0;
-axisv = 0;
-viewv = 0;
+axisv = NaN;
+viewv = NaN;
 
 if isempty(fh) || ~ishandle(fh)
     
@@ -106,7 +106,8 @@ for i=1:length(model.forces)
     positionVector = eval(model.forces(i).positionVector.items, 'caller');
     
     for j=1:length(ah)
-        handles(end+1) = vectarrow(ah(j), model.forces(i).name, positionVector, positionVector + scale*value, 'r');
+        hs = vectarrow(ah(j), model.forces(i).name, positionVector, positionVector + scale*value, 'r');
+        handles = [handles; hs'];
     end
 end
 

@@ -4,10 +4,17 @@ if isempty(fh) || ~ishandle(fh)
     error('Provide a vailid figure handle.')
 end
 
-if ~viewv
+if isnan(viewv)
     viewv = [30 30];
 end
-viewv = [0 180] + viewv;
+
+if revZ
+    viewv = [0 180] + viewv;
+end
+
+if isnan(axisv)
+    axisv = [-10 10 -10 10 -10 10];
+end
 
 figure(fh)
 if showGrid

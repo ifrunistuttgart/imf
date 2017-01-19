@@ -31,9 +31,9 @@ T32 = imf.Transformation(c1, c2, imf.RotationMatrix.T2(q2), imf.Vector([0;0;-l],
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
-m.Add(imf.Mass('m2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
-m.Add(imf.Mass('m3', m3, imf.PositionVector([sin(q3)*l,0,cos(q3)*l]', c2)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
+m.Add(imf.Body('b2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
+m.Add(imf.Body('b3', m3, imf.PositionVector([sin(q3)*l,0,cos(q3)*l]', c2)));
 
 %%
 model = m.Compile();

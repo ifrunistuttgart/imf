@@ -3,6 +3,8 @@ function handles = vectarrow(ah, str, p0, p1, LineSpec)
 alpha = 0.03;
 beta = 0.1;
 
+handles = [];
+
 if max(size(p0))==3
     if max(size(p1))==3
         

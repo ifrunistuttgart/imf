@@ -23,7 +23,7 @@ Parameter l ll m1
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*ll*l,-cos(q1)*ll*l,0]', I)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*ll*l,-cos(q1)*ll*l,0]', I)));
 
 %%
 model = m.Compile();

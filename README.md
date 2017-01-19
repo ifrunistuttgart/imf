@@ -23,7 +23,7 @@ Model(interialSystem)
 ```matlab
 Add(external)
 ```
-*external:* Pass an [imf.Force](#imfforce), [imf.Moment](#imfmoment), [imf.Inertia](#imfinertia) or [imf.Mass](#imfmass) which is then added to the model and automatically transformed into an expression of the inertial frame. If an [imf.Mass](#imfmass) is added when gravity is defined, an equivalent [imf.Force](#imfforce) is automatically added.
+*external:* Pass an [imf.Force](#imfforce), [imf.Moment](#imfmoment), [imf.Inertia](#imfinertia) or [imf.Body](#imfbody) which is then added to the model and automatically transformed into an expression of the inertial frame. If an [imf.Body](#imfbody) is added when gravity is defined, an equivalent [imf.Force](#imfforce) is automatically added.
 
 ```matlab
 Compile
@@ -47,17 +47,21 @@ Gravity(value, coordinateSystem)
 
 *coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* is given in.
 
-#### imf.Mass ####
+#### imf.Body ####
 
 ##### Constructor #####
 ```matlab
-Mass(name, value, positionVector)
+Mass(name, value, positionVector, [inertia], [attitudeVector])
 ```
 *name:* A name for this external used by the visualize function.
 
 *value:* A scalar value or an [imf.Parameter](#imfparameter) defining the mass of a mass point.
 
 *positionVector:* An [imf.PositionVector](#imfpositionvector) defining the position vector of the force induced by the mass and the [imf.Gravity](#imfgravity).
+
+*inertia:* (optional) An [imf.Inertia](#imfinertia) giving the moment of inertia tensor w.r.t. the origin.
+
+*attitudeVector:* (optional) An [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates.
 
 #### imf.Force ####
 
@@ -70,18 +74,6 @@ Force(name, value, positionVector)
 *value:* An [imf.Vector](#imfvector) defining the magnitude and the direction of a force.
 
 *positionVector:* An [imf.PositionVector](#imfpositionvector) describing the position vector of the force *value*.
-
-#### imf.Inertia ####
-
-##### Constructor #####
-```matlab
-Inertia(name, value, attitudeVector)
-```
-*name:* A name for this external used by the visualize function.
-
-*value:* An [imf.Matrix](#imfmatrix) giving the moment of inertia tensor w.r.t. the origin.
-
-*attitudeVector:* An [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates.
 
 #### imf.Moment ####
 
@@ -169,7 +161,7 @@ Variable m1 l
 
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*l,-cos(q1)*l,0]', I)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,-cos(q1)*l,0]', I)));
 ```
 
 ### Torsion Pendulum ###
@@ -221,8 +213,8 @@ m.gravity = imf.Gravity(g, I);
 ```
 5. Now we are ready to define the masses of the poles (as point masses).
 ```matlab
-m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
-m.Add(imf.Mass('m2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
+m.Add(imf.Body('b2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
 ```
 You just need to define a name (for visualization), the mass (either symbolic of numerical value) and the point of application of this mass in any coordinate system you like.
 6. As a last step, you can now compile the model and export MATLAB functions to files named filenameM.m and filenameF.m resulting in equations in the form of M*x' = F. 

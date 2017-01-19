@@ -16,19 +16,15 @@ end
 %%
 BEGIN_IMF
 
-GeneralizedCoordinate q1 q2
+GeneralizedCoordinate phi r
 CoordinateSystem I
-%CoordinateSystem I c1
 Parameter m1 l
-
-%%
-%T21 = imf.Transformation(I, c1, imf.RotationMatrix.T1(q2)*imf.RotationMatrix.T2(q1), imf.Vector([0;0;0], c1));
 
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-%m.Add(imf.Mass('m1', m1, imf.PositionVector([0;0;l], c1)));
-m.Add(imf.Mass('m1', m1, imf.PositionVector([sin(q1);sin(q2);cos(q1)*cos(q2)], I)));
+%m.Add(imf.Body('b1', m1, imf.PositionVector([0;0;l], c1)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([cos(phi)*r;sin(phi)*r;sqrt(l^2 - r^2)], I)));
 
 %%
 model = m.Compile();
@@ -38,7 +34,7 @@ model.matlabFunction('model');
 m1v = 0.1;
 lv = 2;
 
-xy0 = [pi/4 0 0 1];
+xy0 = [0 1 sqrt(norm(g)/(sqrt(2^2-1^2))) 0]; % equilibrium circular trajectory
 xyp0 = [0 0 0 0];
 tspan = linspace(0,7,100);
 
@@ -49,13 +45,13 @@ figure
 grid on
 hold on
 plot(tsol, ysol(:, 1:2))
-legend('q1', 'q2')
+legend('phi', 'r')
 
 figure
 grid on
 hold on
 plot(tsol, ysol(:, 3:4))
-legend('dq1', 'dq2')
+legend('dphi', 'dr')
 
 % %%
 prompt = 'Do you want to create a animate? (y/n) ';
@@ -67,10 +63,10 @@ end
 limits = [-2 2 -2 2 -.5 4];
 
 dt = max(tspan) / length(tspan);
-fh = visualize(m, {q1, q2, m1, l}, [ysol(1,1), ysol(1,2), m1v, lv], 'axis', limits, 'view', [0 90], 'revz', 1);
+fh = visualize(m, {phi, r, m1, l}, [ysol(1,1), ysol(1,2), m1v, lv], 'axis', limits, 'view', [0 90], 'revz', 1);
 pause on
 for i=1:length(ysol)
-    fh = visualize(m, {q1, q2, m1, l}, [ysol(i,1), ysol(i,2),m1v, lv], 'axis', limits, 'view', [0 90], 'revz', 1);
+    fh = visualize(m, {phi, r,  m1, l}, [ysol(i,1), ysol(i,2),m1v, lv], 'axis', limits, 'view', [0 90], 'revz', 1);
     pause(dt);
 end
 
