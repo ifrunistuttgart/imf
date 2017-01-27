@@ -66,7 +66,7 @@ classdef Transformation < handle
                 end
                 
                 if obj.translation.coordinateSystem == from
-                    obj.translation = imf.Vector(obj.rotation.expr * -1 * obj.translation.items', to);
+                    obj.translation = imf.Vector(obj.rotation.expr' * -1 * obj.translation.items', to);
                 end
                 
                 IMF_.transformations(end+1) = obj;
@@ -76,7 +76,7 @@ classdef Transformation < handle
         function out = rotation(obj)
             out = eye(3);
             for i=1:length(obj.rotations)
-                out = out * obj.rotations(i).expr;
+                out = obj.rotations(i).expr * out;
             end
             out = imf.RotationMatrix(out);
         end
