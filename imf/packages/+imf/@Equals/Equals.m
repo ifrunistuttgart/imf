@@ -1,3 +1,13 @@
+%Equals for 2 expressions
+%
+%  Usage:
+%    >> Equals(obj1, obj2);
+%    >> obj1 == obj2;
+%
+%  Parameters:
+%    obj1 	    [Expression]
+%    obj2       [Expression]
+%
 %  Licence:
 %    This file is part of ACADO Toolkit  - (http://www.acadotoolkit.org/)
 %
@@ -19,44 +29,31 @@
 %    You should have received a copy of the GNU Lesser General Public
 %    License along with ACADO Toolkit; if not, write to the Free Software
 %    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-
-classdef Dot < imf.Expression
+%
+%    Author: David Ariens, Rien Quirynen
+%    Date: 2012
+% 
+classdef Equals < imf.BooleanVariable
     properties(SetAccess='private')
-        obj1;
+
     end
     
     methods
-        function obj = Dot(obj1)
+        function obj = Equals(obj1, obj2)
             if nargin > 0
-                global IMF_;
-                if ~isa(obj1, 'imf.GeneralizedCoordinate')
-                    error('You can only use a derivative of an imf.GeneralizedCoordinate');
-                end                
+                obj.obj1 = obj.checkDoubleVectorMatrix(obj1);
+                obj.obj2 = obj.checkDoubleVectorMatrix(obj2);
                 
-                obj.obj1 = obj1;
-                IMF_.helper.addDX(obj1);
+                if( isa(obj1, 'imf.Variable') && length(obj1) == 1 && size(obj2,2) == 2 && isa(obj.obj2, 'imf.Matrix') )   % special case of a VariablesGrid
+                   obj.obj2 = imf.VariablesGrid(obj.obj2); 
+                end
             end
-        end
-        
-        function out = copy(obj)
-            out = obj;
         end
         
         function s = toString(obj)
-            s = sprintf('dot(%s)', obj.obj1.toString);
-        end
-        
-        function jac = jacobian(obj, var)
-            if isa(var, 'imf.Dot')
-                if strcmp(obj.obj1.name, var.obj1.name)
-                    jac = 1;
-                else
-                    jac = 0;
-                end
-            else
-                error('Jacobian feature not supported for expressions with state derivatives.')
-            end
+            s = sprintf('%s == %s', obj.obj1.toString, obj.obj2.toString); 
         end
     end
     
 end
+

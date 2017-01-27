@@ -26,6 +26,8 @@ classdef GeneralizedCoordinate < imf.Variable
                     var(i) = getExpression(var(i));
                     if isa(var(i), 'imf.Variable')
                         jac(j,i) = imf.DoubleConstant(double(isa(var(i), 'imf.GeneralizedCoordinate') && strcmp(obj(j).name, var(i).name)));
+                    elseif isa(var(i), 'imf.Dot')
+                        jac(j,i) = 0;
                     else
                         error('A jacobian can only be computed with respect to a variable.');
                     end

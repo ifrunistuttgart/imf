@@ -1,3 +1,5 @@
+%Binary operator
+%
 %  Licence:
 %    This file is part of ACADO Toolkit  - (http://www.acadotoolkit.org/)
 %
@@ -19,44 +21,31 @@
 %    You should have received a copy of the GNU Lesser General Public
 %    License along with ACADO Toolkit; if not, write to the Free Software
 %    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+%
+%    Author: David Ariens, Rien Quirynen
+%    Date: 2012
+% 
 
-classdef Dot < imf.Expression
-    properties(SetAccess='private')
+classdef BooleanVariable < imf.Expression
+    properties
         obj1;
+        obj2;
     end
     
     methods
-        function obj = Dot(obj1)
-            if nargin > 0
-                global IMF_;
-                if ~isa(obj1, 'imf.GeneralizedCoordinate')
-                    error('You can only use a derivative of an imf.GeneralizedCoordinate');
-                end                
-                
-                obj.obj1 = obj1;
-                IMF_.helper.addDX(obj1);
-            end
+        function obj = BooleanVariable()
+
         end
         
-        function out = copy(obj)
-            out = obj;
-        end
-        
-        function s = toString(obj)
-            s = sprintf('dot(%s)', obj.obj1.toString);
-        end
+        function s = toDisplayString(obj)
+            s = toString(obj); 
+        end  
         
         function jac = jacobian(obj, var)
-            if isa(var, 'imf.Dot')
-                if strcmp(obj.obj1.name, var.obj1.name)
-                    jac = 1;
-                else
-                    jac = 0;
-                end
-            else
-                error('Jacobian feature not supported for expressions with state derivatives.')
-            end
-        end
+            error('The jacobian function is not supported for boolean expressions.');
+        end      
+
     end
     
 end
+

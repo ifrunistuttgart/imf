@@ -104,6 +104,12 @@ for i=1:size(f, 1)
     end
 end
 
+m1v = 2;
+lv = 0.5;
+riv = 0.8;
+rav = 0.9;
+hv = 0.3;
+
 ex = m1*Jr1'*ddr1 + m2*Jr2'*ddr2 - Jr1'*[0;0;m1*g] - Jr2'*[0;0;m2*g] - Jy1'*[0;-kd*diff(q1(t), 1);0] - Jy2'*[0;-kd*diff(q2(t), 1);0];
 ex = simplify(ex);
 ex = subs(ex, [m1 m2 l kd], [m1v m2v lv kdv]);

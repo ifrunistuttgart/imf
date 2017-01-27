@@ -58,7 +58,11 @@ classdef Expression < handle
         function r = dot(obj1, b, dim)
             for i = 1:size(obj1,1)
                 for j = 1:size(obj1,2)
-                    r(i,j) = imf.Dot(obj1(i,j));
+                    if strcmp(class(obj1(i,j)), 'imf.Expression')
+                        r(i,j) = imf.Dot(obj1(i,j).expr);
+                    elseif strcmp(class(obj1(i,j)), 'imf.GeneralizedCoordinate')
+                        r(i,j) = imf.Dot(obj1(i,j));
+                    end
                 end
             end
         end
@@ -66,7 +70,11 @@ classdef Expression < handle
         function r = ddot(obj1, b, dim)
             for i = 1:size(obj1,1)
                 for j = 1:size(obj1,2)
-                    r(i,j) = imf.Ddot(obj1(i,j));
+                    if isa(obj1(i,j), 'imf.Expression')
+                        r(i,j) = imf.Ddot(obj1(i,j).expr);
+                    elseif isa(obj1(i,j), 'imf.GeneralizedCoordinate')
+                        r(i,j) = imf.Ddot(obj1(i,j));
+                    end
                 end
             end
         end
@@ -635,13 +643,13 @@ classdef Expression < handle
                 if nargin < 2
                     ws = 'base';
                 end
-                               
+                
                 for i = 1:size(obj,1)
                     for j = 1:size(obj,2)
                         tmp = evalin(ws, obj(i,j).toString);
-%                        if ~isa(tmp, 'imf.Expression')
-%                            tmp = imf.Expression(tmp);
-%                        end
+                        %                        if ~isa(tmp, 'imf.Expression')
+                        %                            tmp = imf.Expression(tmp);
+                        %                        end
                         out(i,j) = tmp;
                     end
                 end

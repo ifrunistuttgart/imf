@@ -21,10 +21,7 @@ classdef Inertia < imf.Matrix
             
             if obj.coordinateSystem ~= coordinateSystem
                 T = getTransformation(obj.coordinateSystem, coordinateSystem);
-                a = obj.body.positionVector.In(coordinateSystem).items;
-                at = [0 -a(3) a(2); a(3) 0 -a(1); -a(2) a(1) 0];
-                items = T.rotation.expr * obj.items' + obj.body.mass*at'*at;
-                out = imf.Inertia(items, coordinateSystem);
+                out = imf.Inertia(T.rotation.expr * obj.items * T.rotation.expr', coordinateSystem);
                 obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
             else
                 out = obj;

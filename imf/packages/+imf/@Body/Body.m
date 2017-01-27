@@ -7,12 +7,12 @@ classdef Body < handle
         mass
         positionVector@imf.PositionVector
         inertia@imf.Inertia
-        attitudeVector@imf.Vector
+        angularVelocity@imf.AngularVelocity
     end
     
     methods
         
-        function obj = Body(name, mass, positionVector, inertia, attitudeVector)
+        function obj = Body(name, mass, positionVector, inertia, angularVector)
             
             if ischar(name) && ~isempty(mass)
                 obj.name = name;
@@ -45,10 +45,14 @@ classdef Body < handle
                     error('The inertia must be an imf.Inertia');
                 end
                 
-                if isa(attitudeVector, 'imf.Vector')
-                    obj.attitudeVector = attitudeVector;
+                if isa(angularVector, 'imf.AttitudeVector')
+                    gc = genCoordinates;
+                    w = functionalDerivative(angularVector.items, gc);
+                    obj.angularVelocity = imf.AngularVelocity(w, angularVector.coordinateSystem);
+                elseif isa(angularVector, 'imf.AngularVelocity')
+                    obj.angularVelocity = angularVector;
                 else
-                    error('The attitudeVector must be an imf.Vector');
+                    error('The angularVector must be an imf.AttitudeVector or an imf.AngularVelocity');
                 end
                 
             end
@@ -58,7 +62,7 @@ classdef Body < handle
             if isempty(obj.inertia) && obj.positionVector.coordinateSystem ~= coordinateSystem
                 out = imf.Body(obj.name, obj.mass, obj.positionVector.In(coordinateSystem));
             elseif ~isempty(obj.inertia) && (obj.positionVector.coordinateSystem ~= coordinateSystem || obj.inertia.coordinateSystem ~= coordinateSystem)
-                out = imf.Body(obj.name, obj.mass, obj.positionVector.In(coordinateSystem), obj.inertia.In(coordinateSystem), obj.attitudeVector.In(coordinateSystem));
+                out = imf.Body(obj.name, obj.mass, obj.positionVector.In(coordinateSystem), obj.inertia.In(coordinateSystem), obj.angularVelocity.In(coordinateSystem));
             else
                 out = obj;
             end

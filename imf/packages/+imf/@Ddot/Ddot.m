@@ -28,11 +28,13 @@ classdef Ddot < imf.Expression
     methods
         function obj = Ddot(obj1)
             if nargin > 0
-                obj.obj1 = obj1;
                 global IMF_;
-                if isa(obj1, 'imf.GeneralizedCoordinate')
-                    IMF_.helper.addDDX(obj1);
-                end
+                if ~isa(obj1, 'imf.GeneralizedCoordinate')
+                    error('You can only use a derivative of an imf.GeneralizedCoordinate');
+                end                
+                
+                obj.obj1 = obj1;
+                IMF_.helper.addDDX(obj1);
             end
         end
         

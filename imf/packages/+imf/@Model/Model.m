@@ -52,15 +52,20 @@ classdef Model < handle
                 end
                 
                 if ~isempty(b.inertia)
-                    I = b.inertia;
-                    jac = jacobian(b.attitudeVector.items, gc);
-                    dg = functionalDerivative(b.attitudeVector.items, gc);
-                    ddg = functionalDerivative(dg, gc);
+                    I = b.inertia.items;
+                    
+                    for j=1:length(gc)
+                        dgc(j) = dot(gc(j));
+                    end
+                    
+                    jac = jacobian(b.angularVelocity.items, dgc);
+                    w = b.angularVelocity.items;
+                    dw = functionalDerivative(w, gc);
                     
                     if isempty(system)
-                        system = jac'*(I.items*ddg' + cross(dg,I.items*dg));
+                        system = jac'*(I*dw' + cross(w',I*w'));
                     else
-                        system = system + jac'*(I.items*ddg' + cross(dg,I.items*dg')');
+                        system = system + jac'*(I*dw' + cross(w',I*w'));
                     end
                 end
             end
