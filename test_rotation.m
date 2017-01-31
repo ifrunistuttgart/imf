@@ -15,11 +15,11 @@ BEGIN_IMF
 
 GeneralizedCoordinate q1
 CoordinateSystem I
-Parameter k Izz
+Parameter k Izz m1
 
 %%
 m = imf.Model(I);
-m.Add(imf.Inertia('I', imf.Matrix([0 0 0;0 0 0;0 0 Izz], I), imf.Vector([0 0 q1]', I)));
+m.Add(imf.Body('b1', 1, imf.PositionVector([0 0 0]', I), imf.Inertia([0 0 0;0 0 0;0 0 Izz], I), imf.AttitudeVector([0 0 q1]', I)));
 % Be aware of the sign of the Moment induced by the spring
 m.Add(imf.Moment('M1', imf.Vector([0 0 -k*q1]', I), imf.Vector([0 0 q1]', I))); 
 
