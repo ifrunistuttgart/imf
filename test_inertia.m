@@ -56,27 +56,27 @@ plot(tsol, ysol(:,5:8))
 legend('dq1', 'dq2', 'dq3', 'dq4');
 
 %% Test conservation of angular momentum
-syms sra sri sh sm1 sl real
-syms sq1(t) sq2(t) sq3(t) sq4(t)
+syms ras ris hs m1s ls real
+syms q1s(t) q2s(t) q3s(t) q4s(t)
 
-Th = sm1/12 * diag([3*(sra^2+sri^2)+sh^2,  6*(sra^2+sri^2), 3*(sra^2+sri^2)+sh^2]);
+Th = m1s/12 * diag([3*(ras^2+ris^2)+hs^2,  6*(ras^2+ris^2), 3*(ras^2+ris^2)+hs^2]);
 
-ww = [0;0;diff(sq1,t)] + T3(sq1)'*[0;diff(sq2,t);0] +  T2(sq2)'*T3(sq1)'*[diff(sq3,t);0;0] + T3(sq1)'*T2(sq2)'*T1(sq3)'*[0;diff(sq4,t);0];
+ww = [0;0;diff(q1s,t)] + T3(q1s)'*[0;diff(q2s,t);0] +  T2(q2s)'*T3(q1s)'*[diff(q3s,t);0;0] + T3(q1s)'*T2(q2s)'*T1(q3s)'*[0;diff(q4s,t);0];
 
-r = T3(sq1)'*T2(sq2)'*T1(sq3)' * [sl;0;0];
+r = T3(q1s)'*T2(q2s)'*T1(q3s)' * [ls;0;0];
 dr = diff(r, t);
 
-Lw = T3(sq1)'*T2(sq2)'*T1(sq3)'*Th*T1(sq3)*T2(sq2)*T3(sq1) * ww;
-L = Lw + cross(r, sm1*dr);
+Lw = T3(q1s)'*T2(q2s)'*T1(q3s)'*Th*T1(q3s)*T2(q2s)*T3(q1s) * ww;
+L = Lw + cross(r, m1s*dr);
 
-L = subs(L, [sra sri sh sm1 sl], [rav riv hv m1v lv]);
-L = subs(L, [conj(sq1(t)) conj(sq2(t)) conj(sq3(t)) conj(sq4(t))], [sq1(t) sq2(t) sq3(t) sq4(t)]);
-L = subs(L, [diff(conj(sq1(t)),t) diff(conj(sq2(t)),t) diff(conj(sq3(t)),t) diff(conj(sq4(t)),t)], [diff(sq1(t),t) diff(sq2(t),t) diff(sq3(t),t) diff(sq4(t),t)]);
-L = subs(L, [conj(diff(sq1(t),t)) conj(diff(sq2(t),t)) conj(diff(sq3(t),t)) conj(diff(sq4(t),t))], [diff(sq1(t),t) diff(sq2(t),t) diff(sq3(t),t) diff(sq3(t),t)]);
+L = subs(L, [ras ris hs m1s ls], [rav riv hv m1v lv]);
+L = subs(L, [conj(q1s(t)) conj(q2s(t)) conj(q3s(t)) conj(q4s(t))], [q1s(t) q2s(t) q3s(t) q4s(t)]);
+L = subs(L, [diff(conj(q1s(t)),t) diff(conj(q2s(t)),t) diff(conj(q3s(t)),t) diff(conj(q4s(t)),t)], [diff(q1s(t),t) diff(q2s(t),t) diff(q3s(t),t) diff(q4s(t),t)]);
+L = subs(L, [conj(diff(q1s(t),t)) conj(diff(q2s(t),t)) conj(diff(q3s(t),t)) conj(diff(q4s(t),t))], [diff(q1s(t),t) diff(q2s(t),t) diff(q3s(t),t) diff(q3s(t),t)]);
 
 %%
-Lvstart = eval(subs(L, [sq1(t) sq2(t) sq3(t) sq4(t) diff(sq1(t),t) diff(sq2(t),t) diff(sq3(t),t) diff(sq4(t),t)], ysol(1,:)));
-Lvend = eval(subs(L, [sq1(t) sq2(t) sq3(t) sq4(t) diff(sq1(t),t) diff(sq2(t),t) diff(sq3(t),t) diff(sq4(t),t)], ysol(end,:)));
+Lvstart = eval(subs(L, [q1s(t) q2s(t) q3s(t) q4s(t) diff(q1s(t),t) diff(q2s(t),t) diff(q3s(t),t) diff(q4s(t),t)], ysol(1,:)));
+Lvend = eval(subs(L, [q1s(t) q2s(t) q3s(t) q4s(t) diff(q1s(t),t) diff(q2s(t),t) diff(q3s(t),t) diff(q4s(t),t)], ysol(end,:)));
 
 %%
 if all(abs(Lvstart-Lvend) < 1e-3)
