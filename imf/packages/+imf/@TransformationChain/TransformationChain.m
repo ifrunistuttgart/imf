@@ -28,18 +28,17 @@ classdef TransformationChain < handle
         end
         
         function R = HomogeneousMatrix(obj)
-                        
+            
             R = eye(4);
-            for i=length(obj.transformations):-1:1
+            for i=1:length(obj.transformations)
                 R = R * obj.transformations(i).HomogeneousMatrix;
             end
             
         end
         
         function T = rotation(obj)
-            
             T = eye(3);
-            for i=length(obj.transformations):-1:1
+            for i=1:length(obj.transformations)
                 T = T * obj.transformations(i).rotation.expr;
             end
             T = imf.RotationMatrix(T);
