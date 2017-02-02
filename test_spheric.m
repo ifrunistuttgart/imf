@@ -53,21 +53,4 @@ hold on
 plot(tsol, ysol(:, 3:4))
 legend('dphi', 'dr')
 
-% %%
-prompt = 'Do you want to create a animate? (y/n) ';
-s = input(prompt, 's');
-if ~strcmp(s, 'y')
-    return;
-end
-
-limits = [-2 2 -2 2 -.5 4];
-
-dt = max(tspan) / length(tspan);
-fh = visualize(m, {phi, r, m1, l}, [ysol(1,1), ysol(1,2), m1v, lv], 'axis', limits, 'view', [0 90], 'revz', 1);
-pause on
-for i=1:length(ysol)
-    fh = visualize(m, {phi, r,  m1, l}, [ysol(i,1), ysol(i,2),m1v, lv], 'axis', limits, 'view', [0 90], 'revz', 1);
-    pause(dt);
-end
-
 
