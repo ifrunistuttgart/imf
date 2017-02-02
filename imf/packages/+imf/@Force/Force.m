@@ -28,6 +28,12 @@ classdef Force
             end
             
         end
+        
+        function obj = In(obj, coordinateSystem)
+            if obj.value.coordinateSystem ~= coordinateSystem || obj.positionVector.coordinateSystem ~= coordinateSystem
+                obj = imf.Force(obj.name, obj.value.In(coordinateSystem), obj.positionVector.In(coordinateSystem));
+            end
+        end
     end
     
 end
