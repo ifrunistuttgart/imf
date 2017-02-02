@@ -657,6 +657,34 @@ classdef Expression < handle
                 error('Unsupported use of the eval function.');
             end
         end
+                
+        function [ex, vars, params] = symbolic(obj)
+            global IMF_
+            
+            for i = 1:length(IMF_.helper.x)
+                eval(['syms ' IMF_.helper.x{i}.name '(t)']);
+                eval(['vars(i,1) = ' IMF_.helper.x{i}.name ';']);
+            end
+            
+            for i = 1:length(IMF_.helper.param)
+                eval(['syms ' IMF_.helper.param{i}.name]);
+                eval(['params(i,1) = ' IMF_.helper.param{i}.name ';']);
+            end
+            
+            tmp = [];
+            for i = 1:length(obj)
+                tmp{i} = obj(i).expr.toString;
+                
+                for j = 1:length(IMF_.helper.x)
+                    tmp{i} = strrep(tmp{i}, ['ddot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t, t)']);
+                    tmp{i} = strrep(tmp{i}, ['dot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t)']);
+                end
+            end
+            
+            for i=1:length(tmp)
+                ex(i,1) = eval(tmp{i});
+            end
+        end
         
         function out = functionalDerivative(obj, var)
             out = imf.Expression.empty(length(obj), 0);
@@ -710,36 +738,7 @@ classdef Expression < handle
         
         function matlabFunction(obj, filename)
             
-            global IMF_;
-            
-            for j = 1:length(IMF_.helper.x)
-                eval(['syms ' IMF_.helper.x{j}.name '(t)']);
-                eval(['vars(j) = ' IMF_.helper.x{j}.name ';']);
-            end
-            
-            % ex = 'sym(''0'')';
-            ex = [];
-            for i = 1:length(obj)
-                ex{i} = obj(i).expr.toString;
-                
-                for j = 1:length(IMF_.helper.x)
-                    ex{i} = strrep(ex{i}, ['ddot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t, t)']);
-                    ex{i} = strrep(ex{i}, ['dot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t)']);
-                end
-            end
-            
-            for j = 1:length(IMF_.helper.param)
-                eval(['syms ' IMF_.helper.param{j}.name]);
-                eval(['params(j,1) = ' IMF_.helper.param{j}.name ';']);
-            end
-            
-            eqs = symfun.empty(length(obj),0);
-            for i = 1:length(obj)
-                eqs(i,1) = eval(ex{i});
-                if isa(eqs(i,1), 'sym')
-                    eqs(i,1) = simplify(eqs(i,1));
-                end
-            end
+            [eqs, vars, params] = obj.symbolic;            
             [newEqs, newVars] = reduceDifferentialOrder(eqs, vars);
             newEqs = simplify(newEqs);
             [M, F] = massMatrixForm(newEqs, newVars);
@@ -758,6 +757,7 @@ classdef Expression < handle
                 disp(['  Parameter ' num2str(i) ': ' char(params(i))]);
             end
             disp('=======================================================')
+            
         end
     end
     
