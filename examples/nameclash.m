@@ -1,8 +1,7 @@
-clear all
-close all
+init
+BEGIN_IMF
 
-%%
-g = [0 -9.81 0]';
+g = [0 0 9.81]';
 
 %%
 if ~exist('BEGIN_IMF','file'),
@@ -23,7 +22,7 @@ Parameter l ll m1
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*ll*l,-cos(q1)*ll*l,0]', I)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*ll*l,0,cos(q1)*ll*l]', I)));
 
 %%
 model = m.Compile();
@@ -60,6 +59,9 @@ figure
 grid on
 hold on
 plot(tval, yval)
+
+%%
+END_IMF
 
 %%
 if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))

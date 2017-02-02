@@ -1,16 +1,4 @@
-clear all
-close all
-
-%%
-if ~exist('BEGIN_IMF','file'),
-    addpath( genpath([pwd filesep 'imf']) )
-    if ~exist('BEGIN_IMF','file'),
-        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
-            'the library as a sub folder of the current working directory.');
-    end
-end
-
-%%
+init
 BEGIN_IMF
 
 GeneralizedCoordinate q1
@@ -56,6 +44,9 @@ figure
 grid on
 hold on
 plot(tval, yval)
+
+%%
+END_IMF
 
 %%
 if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))

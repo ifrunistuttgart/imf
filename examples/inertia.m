@@ -1,16 +1,4 @@
-clear all
-close all
-
-%%
-if ~exist('BEGIN_IMF','file'),
-    addpath( genpath([pwd filesep 'imf']) )
-    if ~exist('BEGIN_IMF','file'),
-        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
-            'the library as a sub folder of the current working directory.');
-    end
-end
-
-%%
+init
 BEGIN_IMF
 
 GeneralizedCoordinate q1 q2 q3 q4
@@ -77,6 +65,9 @@ L = subs(L, [conj(diff(q1s(t),t)) conj(diff(q2s(t),t)) conj(diff(q3s(t),t)) conj
 %%
 Lvstart = eval(subs(L, [q1s(t) q2s(t) q3s(t) q4s(t) diff(q1s(t),t) diff(q2s(t),t) diff(q3s(t),t) diff(q4s(t),t)], ysol(1,:)));
 Lvend = eval(subs(L, [q1s(t) q2s(t) q3s(t) q4s(t) diff(q1s(t),t) diff(q2s(t),t) diff(q3s(t),t) diff(q4s(t),t)], ysol(end,:)));
+
+%%
+END_IMF
 
 %%
 if all(abs(Lvstart-Lvend) < 1e-3)

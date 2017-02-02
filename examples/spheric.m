@@ -1,20 +1,7 @@
-clear all
-close all
-
-%%
-g = [0 0 9.81]';
-
-%%
-if ~exist('BEGIN_IMF','file'),
-    addpath( genpath([pwd filesep 'imf']) )
-    if ~exist('BEGIN_IMF','file'),
-        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
-            'the library as a sub folder of the current working directory.');
-    end
-end
-
-%%
+init
 BEGIN_IMF
+
+g = [0 0 9.81]';
 
 GeneralizedCoordinate phi r
 CoordinateSystem I
@@ -23,7 +10,6 @@ Parameter m1 l
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-%m.Add(imf.Body('b1', m1, imf.PositionVector([0;0;l], c1)));
 m.Add(imf.Body('b1', m1, imf.PositionVector([cos(phi)*r;sin(phi)*r;sqrt(l^2 - r^2)], I)));
 
 %%
@@ -53,4 +39,10 @@ hold on
 plot(tsol, ysol(:, 3:4))
 legend('dphi', 'dr')
 
+%%
+if all(abs(ysol(end, 3:4)-ysol(1, 3:4)) < 1e-6) && all(abs(ysol(end, 2)-ysol(1, 2)) < 1e-6)
+    disp('Test ran successfully.')
+else
+    error('Test failed.')
+end
 

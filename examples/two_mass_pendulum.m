@@ -1,20 +1,7 @@
-clear all
-close all
-
-%%
-g = [0 0 9.81]';
-
-%%
-if ~exist('BEGIN_IMF','file'),
-    addpath( genpath([pwd filesep 'imf']) )
-    if ~exist('BEGIN_IMF','file'),
-        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
-            'the library as a sub folder of the current working directory.');
-    end
-end
-
-%%
+init
 BEGIN_IMF
+
+g = [0 0 9.81]';
 
 GeneralizedCoordinate q1 q2
 CoordinateSystem I c1
@@ -107,6 +94,9 @@ grid on
 hold on
 plot(tsol, yval(:, 3:4))
 legend('dq1', 'dq2')
+
+%%
+END_IMF
 
 %%
 if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))

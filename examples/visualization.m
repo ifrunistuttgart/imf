@@ -1,20 +1,7 @@
-clear all
-close all
-
-%%
-g = [0 0 9.81]';
-
-%%
-if ~exist('BEGIN_IMF','file'),
-    addpath( genpath([pwd filesep 'imf']) )
-    if ~exist('BEGIN_IMF','file'),
-        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
-            'the library as a sub folder of the current working directory.');
-    end
-end
-
-%%
+init
 BEGIN_IMF
+
+g = [0 0 9.81]';
 
 GeneralizedCoordinate q1 q2 q3
 CoordinateSystem I c1 c2
@@ -38,6 +25,9 @@ m.Add(imf.Body('b3', m3, imf.PositionVector([sin(q3)*l,0,cos(q3)*l]', c2)));
 %%
 model = m.Compile();
 model.matlabFunction('model');
+
+%%
+END_IMF
 
 %%
 m1v = 0.1;

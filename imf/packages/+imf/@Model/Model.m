@@ -108,7 +108,7 @@ classdef Model < handle
                 
                 if ~isempty(obj.gravity)
                     b = obj.bodies(end);
-                    obj.forces(end+1) = imf.Force(['F' b.name], imf.Vector(b.mass*obj.gravity.items, b.positionVector.coordinateSystem), b.positionVector);
+                    obj.forces(end+1) = imf.Force(['F' b.name], imf.Vector(b.mass*obj.gravity.items, obj.gravity.coordinateSystem), b.positionVector);
                 end
                 
             else

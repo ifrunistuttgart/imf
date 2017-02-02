@@ -1,20 +1,7 @@
-clear all
-close all
-
-%%
-g = [0 -9.81 0]';
-
-%%
-if ~exist('BEGIN_IMF','file'),
-    addpath( genpath([pwd filesep 'imf']) )
-    if ~exist('BEGIN_IMF','file'),
-        error('Unable to find the BEGIN_IMF function. Make sure to have' + ...
-            'the library as a sub folder of the current working directory.');
-    end
-end
-
-%%
+init
 BEGIN_IMF
+
+g = [0 0 9.81]';
 
 GeneralizedCoordinate q1
 CoordinateSystem I
@@ -23,7 +10,7 @@ Parameter m1 l
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,-cos(q1)*l,0]', I)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
 
 %%
 model = m.Compile();
@@ -59,6 +46,9 @@ figure
 grid on
 hold on
 plot(tval, yval)
+
+%%
+END_IMF
 
 %%
 if all(tval == tsol) && all(all(abs(yval-ysol) < 1e-5))
