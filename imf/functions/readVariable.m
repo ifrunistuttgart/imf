@@ -24,7 +24,6 @@
 
 %    This File contains modified source code from the ACADO Toolkit.
 
-
 %  Licence:
 %    This file is part of ACADO Toolkit  - (http://www.acadotoolkit.org/)
 %
