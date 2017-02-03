@@ -60,15 +60,15 @@ classdef Matrix < imf.VectorspaceElement
     end
     
     methods
-        function obj = Matrix(val, coordinateSystem)
+        function obj = Matrix(value, coordinateSystem)
             if nargin > 0
                 global IMF_;
                 
-                if (isa(val, 'numeric') || isa(val, 'imf.Expression'))
+                if (isa(value, 'numeric') || isa(value, 'imf.Expression'))
                     IMF_.count_matrix = IMF_.count_matrix+1;
                     obj.name = strcat('imfdata_M', num2str(IMF_.count_matrix));
                     
-                    obj.items = val;
+                    obj.items = value;
                     
                     if isa(coordinateSystem, 'imf.CoordinateSystem')
                         obj.coordinateSystem = coordinateSystem;
@@ -94,7 +94,7 @@ classdef Matrix < imf.VectorspaceElement
             
             if obj.coordinateSystem ~= coordinateSystem
                 T = getTransformation(obj.coordinateSystem, coordinateSystem);
-                items = T.rotation.expr * obj.items';
+                items = T.rotation.expr * obj.items' *  T.rotation.expr';
                 out = imf.Matrix(items, coordinateSystem);
                 obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
             else

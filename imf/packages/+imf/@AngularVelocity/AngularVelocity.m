@@ -25,8 +25,8 @@
 classdef AngularVelocity < imf.Vector
     
     methods
-        function obj = AngularVelocity(val, coordinateSystem)
-            obj = obj@imf.Vector(val, coordinateSystem);
+        function obj = AngularVelocity(value, coordinateSystem)
+            obj = obj@imf.Vector(value, coordinateSystem);
         end
         
         function out = In(obj, coordinateSystem)

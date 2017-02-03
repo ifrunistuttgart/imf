@@ -60,26 +60,26 @@ classdef Vector < imf.VectorspaceElement
     end
     
     methods
-        function obj = Vector(val, coordinateSystem)
+        function obj = Vector(value, coordinateSystem)
             if nargin > 0
                 global IMF_;
                 
-                if (isa(val, 'numeric') || isa(val, 'imf.Expression'))
+                if (isa(value, 'numeric') || isa(value, 'imf.Expression'))
                     IMF_.count_vector = IMF_.count_vector+1;
                     obj.name = strcat('imfdata_v', num2str(IMF_.count_vector));
                     
-                    if isa(val, 'numeric')
-                        val = imf.Expression(val);
+                    if isa(value, 'numeric')
+                        value = imf.Expression(value);
                     end
                     
-                    [m n] = size(val);
+                    [m n] = size(value);
                     
                     if (m == 1)
                         obj.dim = n;
-                        obj.items = val;
+                        obj.items = value;
                     elseif (n == 1)
                         obj.dim = m;
-                        obj.items = val';
+                        obj.items = value';
                     else
                         error('Input should be a vector');
                     end

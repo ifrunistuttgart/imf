@@ -23,12 +23,12 @@ Model(interialSystem)
 ```matlab
 Add(external)
 ```
-*external:* Pass an [imf.Force](#imfforce), [imf.Moment](#imfmoment), [imf.Inertia](#imfinertia) or [imf.Body](#imfbody) which is then added to the model and automatically transformed into an expression of the inertial frame. If an [imf.Body](#imfbody) is added when gravity is defined, an equivalent [imf.Force](#imfforce) is automatically added.
+*external:* Pass an [imf.Force](#imfforce), [imf.Moment](#imfmoment) or [imf.Body](#imfbody) which is then added to the model and automatically transformed into an expression in the inertial frame. If an [imf.Body](#imfbody) is added when gravity is defined, an equivalent [imf.Force](#imfforce) is automatically added.
 
 ```matlab
 Compile
 ```
-*return value*: Calculates the jacobians and derivatives needed for the formulation of the equations of motion and computes and returns them symbolically as an array of [imf.Expression](#imfexpression). 
+*return value*: Calculates the jacobians and derivatives needed for the formulation of the equations of motion and computes and returns them symbolically as an array of [imf.Expression](#imfexpression).
 
 ##### Variables #####
 ```matlab
@@ -59,9 +59,9 @@ Mass(name, value, positionVector, [inertia], [attitudeVector])
 
 *positionVector:* An [imf.PositionVector](#imfpositionvector) defining the position vector of the force induced by the mass and the [imf.Gravity](#imfgravity).
 
-*inertia:* (optional) An [imf.Inertia](#imfinertia) giving the moment of inertia tensor w.r.t. the origin.
+*inertia:* (optional) An [imf.Inertia](#imfinertia) giving the moment of inertia tensor.
 
-*attitudeVector:* (optional) An [imf.Vector](#imfvector) describing the attitude of the system w.r.t. the generalized coordinates.
+*angularVector:* (optional) An [imf.AttitudeVector](#imfattitudevector) describing the attitude of the system or an [imf.AngularVelocity](#imfangularvelocity).
 
 #### imf.Force ####
 
@@ -79,7 +79,7 @@ Force(name, value, positionVector)
 
 ##### Constructor #####
 ```matlab
-Moment(name, value, attitudeVector)
+Moment(name, value, attitudeVector, origin)
 ```
 *name:* A name for this external used by the visualize function.
 
@@ -97,11 +97,87 @@ matlabFunction(filename)
 ```
 Reduces the order of the differential function and generates two files *filenameM* and *filenameF* giving a first order differential equation in mass-matrix form M*xdot = F
 
+```matlab
+symbolic
+```
+Returns an vector of MATLAB's symbolic objects.
+
 #### imf.Transformation ####
+##### Constructor #####
+```matlab
+Transformation(from, to, [rotation], [rotation], [rotation], [rotation|translation]*)
+```  
+(*) You need to define at least one rotation or translation and not more than three roations and one translation.
+*name:* A name for this external used by the visualize function.
+
+*value:* An [imf.Vector](#imfvector) defining the magnitude and the axis of a moment.
+
+*rotation:* (optional) An [imf.RotationMatrix](#imfrotationmatrix) describing rotation from *from* to *to*.
+
+*translation:* (optional) An [imf.Vector](#imfvector) describing translational offset of both coordinate systems.
+
 #### imf.Vector ####
+A vector is only rotated when transformed.
+##### Constructor #####
+```matlab
+Vector(value, coordinateSystem)
+```  
+*value:* An vector or an [imf.Vector](#imfvector) defining the value in *coordinateSystem*.
+*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* is given in.
+  
 #### imf.PositionVector ####
+A position vector is rotated and translated when transformed.
+##### Constructor #####
+```matlab
+PositionVector(value, coordinateSystem)
+```  
+*value:* An vector or an [imf.Vector](#imfvector) defining the value in *coordinateSystem*.
+*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* is given in.
+
+#### imf.AttitudeVector ####
+An attitude vector can not be transformed at the moment. It is only used to derive the angular velocity.
+##### Constructor #####
+```matlab
+AttitudeVector(value, coordinateSystem)
+```  
+*value:* An vector or an [imf.Vector](#imfvector) defining the value in *coordinateSystem*.
+*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* is given in.
+
+#### imf.AngularVelocity ####
+An angular velocity is transformed using the rotational sequences provided by the transformation.
+##### Constructor #####
+```matlab
+AngularVelocity(value, coordinateSystem)
+```  
+*value:* An vector or an [imf.Vector](#imfvector) defining the value in *coordinateSystem*.
+*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* is given in.
+
 #### imf.Matrix ####
+An matrix is transformed by rotation.
+##### Constructor #####
+```matlab
+Matrix(value, coordinateSystem)
+```  
+*value:* An vector or an [imf.Vector](#imfvector) defining the value in *coordinateSystem*.
+*coordinateSystem:* An [imf.CoordinateSystem](#imfcoordinateSystem) the *value* is given in.
+
+#### imf.RotationMatrix ####
+
+##### Constructor #####
+```matlab
+RotationMatrix(value, [axis], [generalizedCoordinate])
+```  
+*value:* A matrix or an [imf.Expression](#imfexpression) defining the value.
+*axis:* (optional) A numeric scalar providing the axis which the turn is performed around.
+*generalizedCoordinate:* (optional) The [imf.GeneralizedCoordinate](#imfgeneralizedcoordinate) giving the angle for the rotation.
+
 #### imf.CoordinateSystem ####
+
+##### Constructor #####
+```matlab
+CoordinateSystem(name)
+```  
+*name:* A name for the coordinate system.
 
 ### Important Functions ###
 #### visualize ####
@@ -125,7 +201,6 @@ visualize(model, variables, values, varargin)
 % EXAMPLE USAGE:  
 visualize(m, {q1, q2, m1, m2, l}, [ysol(i,1), ysol(i,2), m1v, m2v, lv], 'axis', [-2 2 -2 2 -.5 4], 'view', [0 0], 'revz', 1)
 ```
-
 
 ## Examples ##
 

@@ -25,8 +25,8 @@
 classdef AttitudeVector < imf.Vector
     
     methods
-        function obj = AttitudeVector(val, coordinateSystem)
-            obj = obj@imf.Vector(val, coordinateSystem);
+        function obj = AttitudeVector(value, coordinateSystem)
+            obj = obj@imf.Vector(value, coordinateSystem);
         end
         
         function out = In(obj, coordinateSystem)

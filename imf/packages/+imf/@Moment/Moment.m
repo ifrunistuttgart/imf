@@ -33,7 +33,7 @@ classdef Moment
     
     methods
         
-        function obj = Moment(name, value, attitudeVector, origin)
+        function obj = Moment(name, value, attitudeVector)
             
             if ischar(name) && ~isempty(value)
                 obj.name = name;
@@ -51,11 +51,7 @@ classdef Moment
                 error('The attitudeVector must be an imf.Vector');
             end
             
-            if nargin < 4
-                obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
-            else
-                obj.origin = origin;
-            end
+            obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
             
         end
         

@@ -24,8 +24,8 @@
 
 classdef Gravity < imf.Vector    
     methods
-        function obj = Gravity(val, coordinateSystem)
-            obj = obj@imf.Vector(val, coordinateSystem);            
+        function obj = Gravity(value, coordinateSystem)
+            obj = obj@imf.Vector(value, coordinateSystem);            
         end
     end
 end
