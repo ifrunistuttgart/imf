@@ -27,7 +27,7 @@ classdef Moment
     properties(SetAccess = 'private')
         name
         value@imf.Vector
-        attitudeVector@imf.Vector
+        attitudeVector@imf.AttitudeVector
         origin@imf.PositionVector
     end
     
@@ -45,7 +45,7 @@ classdef Moment
                 error('The moment must be an imf.Vector');
             end
             
-            if isa(attitudeVector, 'imf.Vector')
+            if isa(attitudeVector, 'imf.AttitudeVector')
                 obj.attitudeVector = attitudeVector;
             else
                 error('The attitudeVector must be an imf.Vector');

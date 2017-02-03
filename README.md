@@ -232,7 +232,7 @@ END_IMF
 ```matlab
 GeneralizedCoordinate q1
 CoordinateSystem I
-Variable m1 l
+Parameter m1 l
 
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
@@ -245,12 +245,12 @@ This is a simple model to show the functionality of rotational motion modelling.
 ```matlab
 GeneralizedCoordinate q1
 CoordinateSystem I
-Variable k Izz
+Parameter m1 k Izz
 
 m = imf.Model(I);
-m.Add(imf.Inertia('I', imf.Matrix([0 0 0;0 0 0;0 0 Izz], I), imf.Vector([0 0 q1]', I)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([0;0;0]), imf.Inertia([0 0 0;0 0 0;0 0 Izz], I), imf.AttitudeVector([0 0 q1]', I)));
 % Be aware of the sign of the Moment induced by the spring
-m.Add(imf.Moment('M1', imf.Vector([0 0 -k*q1]', I), imf.Vector([0 0 q1]', I))); 
+m.Add(imf.Moment('M1', imf.Vector([0 0 -k*q1]', I), imf.AttitudeVector([0 0 q1]', I))); 
 ```
 
 ### Step-by-Step ###
