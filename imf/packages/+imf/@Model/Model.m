@@ -58,19 +58,23 @@ classdef Model < handle
             
             gc = genCoordinates;
             
+            if isempty(gc)
+                error('There are no generalized coordinates defined. Aborting.')
+            end
+            
             system = imf.Expression.empty(length(obj.bodies),0);
             
             for i=1:length(obj.bodies)
                 b = obj.bodies(i);
                 m = b.mass;
-                jac = jacobian(b.positionVector.items, gc);
-                dr = functionalDerivative(b.positionVector.items, gc);
+                jac = jacobian(b.positionVector, gc);
+                dr = functionalDerivative(b.positionVector, gc);
                 ddr = functionalDerivative(dr, gc);
                 
                 if isempty(system)
-                    system = m*jac'*ddr';
+                    system = m*jac'*ddr;
                 else
-                    system = system + m*jac'*ddr';
+                    system = system + m*jac'*ddr;
                 end
                 
                 if ~isempty(b.inertia)
@@ -80,37 +84,41 @@ classdef Model < handle
                         dgc(j) = dot(gc(j));
                     end
                     
-                    jac = jacobian(b.angularVelocity.items, dgc);
-                    w = b.angularVelocity.items;
+                    jac = jacobian(b.angularVelocity, dgc);
+                    w = b.angularVelocity;
                     dw = functionalDerivative(w, gc);
                     
                     if isempty(system)
-                        system = jac'*(I*dw' + cross(w',I*w'));
+                        system = jac'*(I*dw + cross(w,I*w));
                     else
-                        system = system + jac'*(I*dw' + cross(w',I*w'));
+                        system = system + jac'*(I*dw + cross(w,I*w));
                     end
                 end
             end
             
             for i=1:length(obj.forces)
                 F = obj.forces(i);
-                jac = jacobian(F.positionVector.items, gc);
+                jac = jacobian(F.positionVector, gc);
                 
                 if isempty(system)
-                    system = -1 * jac'*F.value';
+                    system = -1 * jac'*F.value;
                 else
-                    system = system - jac'*F.value.items';
+                    system = system - jac'*F.value;
                 end
             end
             
             for i=1:length(obj.moments)
                 M = obj.moments(i);
-                jac = jacobian(M.attitudeVector.items, gc);
+                
+                for j=1:length(gc)
+                    dgc(j) = dot(gc(j));
+                end
+                jac = jacobian(M.angularVelocity, dgc);
                 
                 if isempty(system)
-                    system = -1 * jac'*M.value.items';
+                    system = -1 * jac'*M.value;
                 else
-                    system = system - jac'*M.value.items';
+                    system = system - jac'*M.value;
                 end
             end
         end
@@ -123,7 +131,7 @@ classdef Model < handle
             elseif isa(external, 'imf.Moment')
                 
                 obj.moments(end+1) = external.In(obj.inertialSystem);
-                                
+                
             elseif isa(external, 'imf.Body')
                 
                 obj.bodies(end+1) = external.In(obj.inertialSystem);

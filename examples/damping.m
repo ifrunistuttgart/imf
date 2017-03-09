@@ -38,7 +38,7 @@ T21 = imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([0;0;-l], 
 %%
 m = imf.Model(I);
 m.gravity = imf.Gravity(g, I);
-m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
+m.Add(imf.Body('b1', m1, imf.PositionVector([0,0,0]', c1)));
 m.Add(imf.Body('b2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
 
 m.Add(imf.Moment('Md1', imf.Vector([0;-kd*dot(q1);0], I), imf.AttitudeVector([0;q1;0], I)));
@@ -80,7 +80,7 @@ syms q1s(t) q2s(t)
 r1 = [ls*sin(q1s); 0; ls*cos(q1s)];
 r2 = r1 + [ls*sin(q2s + q1s); 0; ls*cos(q2s + q1s)];
 y1 = [0;q1s;0];
-y2 = [0;q2s;0];
+y2 = [0;q2s+q1s;0];
 ddr1 = diff(r1, t, t);
 ddr2 = diff(r2, t, t);
 

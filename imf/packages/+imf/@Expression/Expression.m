@@ -133,7 +133,7 @@ classdef Expression < handle
                 end
             else
                 if size(obj1,2) ~= size(obj2,1)
-                    error('ERROR: Invalid imf.Product. Check your dimensions..');
+                    error('ERROR: Invalid imf.Product. Check your dimensions.');
                 end
                 for i = 1:size(obj1,1)
                     for j = 1:size(obj2,2)
@@ -161,7 +161,7 @@ classdef Expression < handle
                 end
             else
                 if size(obj1,1) ~= size(obj2,1) || size(obj1,2) ~= size(obj2,2)
-                    error('ERROR: Invalid imf.Product. Check your dimensions..');
+                    error('ERROR: Invalid imf.Product. Check your dimensions.');
                 end
                 for i = 1:size(obj1,1)
                     for j = 1:size(obj1,2)
@@ -269,90 +269,6 @@ classdef Expression < handle
             end
         end
         
-        function r = eq(obj1, obj2)       % ==
-            if isnumeric(obj1) && length(obj1) == 1
-                obj1 = obj1*ones(size(obj2));
-            elseif isnumeric(obj2) && length(obj2) == 1
-                obj2 = obj2*ones(size(obj1));
-            end
-            if isa(obj1, 'imf.Variable') && length(obj1) == 1 && size(obj2,2) == 2  % special case of a VariablesGrid
-                r = imf.Equals(obj1,obj2);
-            else
-                if size(obj1,1) ~= size(obj2,1) || size(obj1,2) ~= size(obj2,2)
-                    error('ERROR: Invalid imf.Equals. Check your dimensions..');
-                end
-                for i = 1:size(obj1,1)
-                    for j = 1:size(obj1,2)
-                        r(i,j) = imf.Equals(obj1(i,j),obj2(i,j));
-                    end
-                end
-            end
-        end
-        
-        function r = lt(obj1, obj2)       % <
-            if isnumeric(obj1) && length(obj1) == 1
-                obj1 = obj1*ones(size(obj2));
-            elseif isnumeric(obj2) && length(obj2) == 1
-                obj2 = obj2*ones(size(obj1));
-            end
-            if size(obj1,1) ~= size(obj2,1) || size(obj1,2) ~= size(obj2,2)
-                error('ERROR: Invalid imf.LessThan. Check your dimensions..');
-            end
-            for i = 1:size(obj1,1)
-                for j = 1:size(obj1,2)
-                    r(i,j) = imf.LessThan(obj1(i,j),obj2(i,j));
-                end
-            end
-        end
-        
-        function r = le(obj1, obj2)       % <=
-            if isnumeric(obj1) && length(obj1) == 1
-                obj1 = obj1*ones(size(obj2));
-            elseif isnumeric(obj2) && length(obj2) == 1
-                obj2 = obj2*ones(size(obj1));
-            end
-            if size(obj1,1) ~= size(obj2,1) || size(obj1,2) ~= size(obj2,2)
-                error('ERROR: Invalid imf.LessThanEqual. Check your dimensions..');
-            end
-            for i = 1:size(obj1,1)
-                for j = 1:size(obj1,2)
-                    r(i,j) = imf.LessThanEqual(obj1(i,j),obj2(i,j));
-                end
-            end
-        end
-        
-        function r = gt(obj1, obj2)       % >
-            if isnumeric(obj1) && length(obj1) == 1
-                obj1 = obj1*ones(size(obj2));
-            elseif isnumeric(obj2) && length(obj2) == 1
-                obj2 = obj2*ones(size(obj1));
-            end
-            if size(obj1,1) ~= size(obj2,1) || size(obj1,2) ~= size(obj2,2)
-                error('ERROR: Invalid imf.GreaterThan. Check your dimensions..');
-            end
-            for i = 1:size(obj1,1)
-                for j = 1:size(obj1,2)
-                    r(i,j) = imf.GreaterThan(obj1(i,j),obj2(i,j));
-                end
-            end
-        end
-        
-        function r = ge(obj1, obj2)       % >=
-            if isnumeric(obj1) && length(obj1) == 1
-                obj1 = obj1*ones(size(obj2));
-            elseif isnumeric(obj2) && length(obj2) == 1
-                obj2 = obj2*ones(size(obj1));
-            end
-            if size(obj1,1) ~= size(obj2,1) || size(obj1,2) ~= size(obj2,2)
-                error('ERROR: Invalid imf.GreaterThanEqual. Check your dimensions..');
-            end
-            for i = 1:size(obj1,1)
-                for j = 1:size(obj1,2)
-                    r(i,j) = imf.GreaterThanEqual(obj1(i,j),obj2(i,j));
-                end
-            end
-        end
-        
         function r = exp(obj1)            % exp
             for i = 1:size(obj1,1)
                 for j = 1:size(obj1,2)
@@ -431,6 +347,48 @@ classdef Expression < handle
             else
                 s = obj.name;
             end
+        end
+        
+        function out = eq(a,b)
+            if size(a) ~= size(b)
+                error('ERROR: check your dimensions');
+            end
+            
+            if length(a) > 1 || length(b) > 1
+                for i=1:size(a,1)
+                    for j=1:size(a,2)
+                        if a(i,j) ~= b(i,j)
+                            out = 0;
+                            return;
+                        else
+                            out = 1;
+                        end
+                    end
+                end
+            end
+            
+            out = strcmp(strtrim(a.toString), strtrim(b.toString));
+        end
+        
+        function out = ne(a,b)
+            if size(a) ~= size(b)
+                error('ERROR: check your dimensions');
+            end
+            
+            if length(a) > 1 || length(b) > 1
+                for i=1:size(a,1)
+                    for j=1:size(a,2)
+                        if a(i,j) == b(i,j)
+                            out = 0;
+                            return;
+                        else
+                            out = 1;
+                        end
+                    end
+                end
+            end
+            
+            out = ~strcmp(strtrim(a.toString), strtrim(b.toString));
         end
         
         function result = checkDoubleVectorMatrix(obj, r)
@@ -647,13 +605,18 @@ classdef Expression < handle
         
         function out = getExpression(obj)
             if strcmp(class(obj), 'imf.Expression')
-                out = obj.expr;
+                for i=1:size(obj, 1)
+                    for j=1:size(obj, 2)
+                        out(i,j) = obj(i,j).expr;
+                    end
+                end
             else
                 out = obj;
             end
         end
         
         function jac = jacobian(obj, var)
+            jac = imf.Expression.empty(length(obj), 0);
             for i = 1:length(obj)
                 for j = 1:length(var)
                     jac(i,j) = imf.Expression(jacobian(obj(i).getExpression, var(j).getExpression));
@@ -686,15 +649,17 @@ classdef Expression < handle
                 error('Unsupported use of the eval function.');
             end
         end
-                
+        
         function [ex, vars, params] = symbolic(obj)
             global IMF_
             
+            vars = sym.empty(0, 1);
             for i = 1:length(IMF_.helper.x)
                 eval(['syms ' IMF_.helper.x{i}.name '(t)']);
                 eval(['vars(i,1) = ' IMF_.helper.x{i}.name ';']);
             end
             
+            params = sym.empty(0, 1);
             for i = 1:length(IMF_.helper.param)
                 eval(['syms ' IMF_.helper.param{i}.name]);
                 eval(['params(i,1) = ' IMF_.helper.param{i}.name ';']);
@@ -720,7 +685,7 @@ classdef Expression < handle
             
             global IMF_
             
-            symsex = 'syms';
+            symsex = 'syms t';
             for j = 1:length(var)
                 %symsex = [symsex ' ' var(j).expr.name '(t)'];
                 symsex = [symsex ' q' num2str(j) '(t)'];
@@ -761,13 +726,18 @@ classdef Expression < handle
                     d = strrep(d, ['imfvar' num2str(j)], ['IMF_.helper.param{' num2str(j) '}']);
                 end
                 
+                d = regexprep(d, '(?<!(?:[a-zA-Z0-9]))(t)(?!(?:[a-zA-Z0-9]+))', 'IMF_.t');
                 out(i) = eval(d);
+            end
+            
+            if size(obj, 1) > size(obj, 2)
+                out = out';
             end
         end
         
         function matlabFunction(obj, filename)
             
-            [eqs, vars, params] = obj.symbolic;            
+            [eqs, vars, params] = obj.symbolic;
             [newEqs, newVars] = reduceDifferentialOrder(eqs, vars);
             newEqs = simplify(newEqs);
             [M, F] = massMatrixForm(newEqs, newVars);

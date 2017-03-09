@@ -52,7 +52,6 @@
 global IMF_; IMF_=[];
 IMF_.pwd = pwd;
 
-
 % Helper
 IMF_.helper = imf.IMFHelper();
 
@@ -62,3 +61,6 @@ IMF_.transformationChains = imf.TransformationChain.empty;
 IMF_.count_vector = 0;
 IMF_.count_matrix = 0;
 IMF_.count_double = 0;
+
+IMF_.t = imf.Variable('t');
+t = IMF_.t;

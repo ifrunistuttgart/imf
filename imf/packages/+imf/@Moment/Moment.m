@@ -27,37 +27,41 @@ classdef Moment
     properties(SetAccess = 'private')
         name
         value@imf.Vector
-        attitudeVector@imf.AttitudeVector
+        angularVelocity@imf.AngularVelocity
         origin@imf.PositionVector
     end
     
     methods
         
-        function obj = Moment(name, value, attitudeVector)
+        function obj = Moment(name, value, angularVector, origin)
             
             if ischar(name) && ~isempty(value)
                 obj.name = name;
             end
             
-            if isa(value, 'imf.Vector')
-                obj.value = value;
+            obj.value = value;
+            
+            if isa(angularVector, 'imf.AttitudeVector')
+                gc = genCoordinates;
+                w = functionalDerivative(angularVector.items, gc);
+                obj.angularVelocity = imf.AngularVelocity(w, angularVector.coordinateSystem);
+            elseif isa(angularVector, 'imf.AngularVelocity')
+                obj.angularVelocity = angularVector;
             else
-                error('The moment must be an imf.Vector');
+                error('The angularVector must be an imf.AttitudeVector or an imf.AngularVelocity');
             end
             
-            if isa(attitudeVector, 'imf.AttitudeVector')
-                obj.attitudeVector = attitudeVector;
+            if nargin > 3
+                obj.origin = origin;
             else
-                error('The attitudeVector must be an imf.Vector');
+                obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
             end
-            
-            obj.origin = imf.PositionVector([0;0;0], obj.value.coordinateSystem);
             
         end
         
         function obj = In(obj, coordinateSystem)
-            if obj.value.coordinateSystem ~= coordinateSystem || obj.attitudeVector.coordinateSystem ~= coordinateSystem
-                obj = imf.Moment(obj.name, obj.value.In(coordinateSystem), obj.attitudeVector.In(coordinateSystem), obj.origin.In(coordinateSystem));
+            if obj.value.coordinateSystem ~= coordinateSystem || obj.angularVelocity.coordinateSystem ~= coordinateSystem
+                obj = imf.Moment(obj.name, obj.value.In(coordinateSystem), obj.angularVelocity.In(coordinateSystem), obj.origin.In(coordinateSystem));
             end
         end
         

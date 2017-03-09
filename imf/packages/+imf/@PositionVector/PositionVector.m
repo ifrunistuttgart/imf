@@ -45,7 +45,8 @@ classdef PositionVector < imf.Vector
                 if obj.coordinateSystem ~= coordinateSystem
                     T = getTransformation(obj.coordinateSystem, coordinateSystem);
                     R = T.HomogeneousMatrix;
-                    items = R * [obj.items'; 1];
+                    items = R * [obj.items; 1];
+                    items = items.simplify;
                     out = imf.PositionVector(items(1:3), coordinateSystem);
                     obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
                 end

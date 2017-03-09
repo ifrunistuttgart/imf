@@ -55,8 +55,16 @@ classdef Variable < imf.Expression
     end
     
     methods
-        function obj = Variable(name)            
-            obj.singleTerm = 1;            
+        function obj = Variable(name)
+            obj.singleTerm = 1;
+            
+            if nargin > 0
+                obj.name = name;
+                
+                if (isvarname(name) ~= 1)
+                    error( 'ERROR: The variable name you have set is not a valid matlab variable name. A valid variable name is a character string of letters, digits, and underscores, totaling not more than namelengthmax characters and beginning with a letter.' );
+                end
+            end
         end
         
         function out = copy(obj)
@@ -89,5 +97,5 @@ classdef Variable < imf.Expression
             end
             
         end
-    end    
+    end
 end

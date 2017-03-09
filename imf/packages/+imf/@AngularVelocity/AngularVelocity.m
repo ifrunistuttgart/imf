@@ -45,28 +45,31 @@ classdef AngularVelocity < imf.Vector
                 if obj.coordinateSystem ~= coordinateSystem
                     T = getTransformation(obj.coordinateSystem, coordinateSystem);
                     
-                    w = obj.items';
                     for i=1:length(T.rotations)
-                        w = T.rotations(i).expr * w;
+                        out = T.rotations{i} * out;
                     end
                     
                     for i=1:length(T.rotations)
-                        v = imf.Expression([0;0;0]);
-                        v(T.rotations(i).axis) = dot(T.rotations(i).generalizedCoordinate);
+                        v = imf.AngularVelocity([0;0;0], out.coordinateSystem);
+                        % TODO: should be accessible via v(idx) but is not
+                        v.items(T.rotations{i}.axis) = dot(T.rotations{i}.generalizedCoordinate);
                         if i < length(T.rotations)
                             R = T.rotations(i+1:end);
-                            for j=1:length(R)
-                                v = R(j).expr * v;
+                            if length(R) > 1
+                                for j=1:length(R)
+                                    v = R{j} * v;
+                                end
+                            else
+                                v = R{1} * v;
                             end
                         end
-                        w = w + v;
+                        out = out + v;
                     end
-                    out = imf.AngularVelocity(w, coordinateSystem);
+                    out.items = out.items.simplify;
                     obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
-                end
-                
+                end                
             end
         end
-    end
-    
+
+    end    
 end

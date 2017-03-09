@@ -48,7 +48,7 @@
 %
 %    Author: David Ariens, Rien Quirynen
 %    Date: 2012
-% 
+%
 classdef Vector < imf.VectorspaceElement
     properties
         dim = 0;
@@ -64,7 +64,13 @@ classdef Vector < imf.VectorspaceElement
             if nargin > 0
                 global IMF_;
                 
-                if (isa(value, 'numeric') || isa(value, 'imf.Expression'))
+                if isa(value, 'imf.Vector')
+                    obj = value;
+                    
+                    if isa(coordinateSystem, 'imf.CoordinateSystem')
+                        obj.coordinateSystem = coordinateSystem;
+                    end
+                elseif (isa(value, 'numeric') || isa(value, 'imf.Expression'))
                     IMF_.count_vector = IMF_.count_vector+1;
                     obj.name = strcat('imfdata_v', num2str(IMF_.count_vector));
                     
@@ -74,12 +80,9 @@ classdef Vector < imf.VectorspaceElement
                     
                     [m n] = size(value);
                     
-                    if (m == 1)
-                        obj.dim = n;
+                    if (m == 1) || (n == 1)
+                        obj.dim = max(m, n);
                         obj.items = value;
-                    elseif (n == 1)
-                        obj.dim = m;
-                        obj.items = value';
                     else
                         error('Input should be a vector');
                     end
@@ -90,7 +93,7 @@ classdef Vector < imf.VectorspaceElement
                         error('The coordinateSystem must be an imf.CoordinateSystem');
                     end
                 else
-                    error('Vector expects a numeric value');
+                    error('Vector expects a numeric value or an imf.Expression');
                 end
             end
         end
@@ -103,15 +106,144 @@ classdef Vector < imf.VectorspaceElement
                         return;
                     end
                 end
-            end            
+            end
             
             if obj.coordinateSystem ~= coordinateSystem
                 T = getTransformation(obj.coordinateSystem, coordinateSystem);
-                items = T.rotation.expr * obj.items';
+                items = T.rotation.expr * obj.items;
+                items = items.simplify;
                 out = imf.Vector(items, coordinateSystem);
                 obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
             else
                 out = obj;
+            end
+        end        
+        
+        function out = eq(a,b)
+            out = eq(getExpression(a), getExpression(b));
+        end
+        
+        function out = ne(a,b)
+            out = ne(getExpression(a), getExpression(b));
+        end
+        
+        function out = jacobian(obj, gc)
+            out = jacobian(obj.items, gc);
+        end
+        
+        function out = functionalDerivative(obj, gc)
+            out = imf.Vector(functionalDerivative(obj.items, gc), obj.coordinateSystem);
+        end
+        
+        function out = getExpression(obj)
+            m = size(obj, 1);
+            n = size(obj, 2);
+            if m > n
+                out = imf.Expression.empty(m, 0);
+            else
+                out = imf.Expression.empty(0, n);
+            end
+            
+            for i=1:m
+                for j=1:n
+                    out(i,j) = getExpression(obj.items(i,j));
+                end
+            end
+        end
+        
+        function out = length(obj)
+            out = obj.dim;
+        end
+        
+        function out = size(obj, dim)
+            if nargin < 2
+                out = builtin('size', obj.items);
+            else
+                out = builtin('size', obj.items, dim);
+            end
+        end
+        
+        
+        function out = ctranspose(in)
+            out = transpose(in);
+        end
+        
+        function out = transpose(in)
+            out = imf.Vector(in.items, in.coordinateSystem);
+            out.items = out.items';
+        end
+        
+        function out = subsref(obj, s)
+            switch s(1).type
+                case '.'
+                    if length(s) == 1
+                        prop = s(1).subs;
+                        out = obj.(prop);
+                    elseif length(s) == 2 && strcmp(s(2).type,'()')
+                        method = s(1).subs;
+                        args = s(2).subs;
+                        out = obj.(method)(args{:});
+                    else
+                        out = builtin('subsref', obj, s);
+                    end
+                case '()'
+                    if length(s(1).subs) == 1
+                        [m,n] = ind2sub(size(obj), s(1).subs{1});
+                    else
+                        m = s(1).subs{1};
+                        n = s(1).subs{2};
+                    end
+                    out = obj.items(m,n);
+                otherwise
+                    error('This indexing is not supported.');
+            end
+        end
+        
+        function out = plus(a,b)
+            if size(a,1) ~= size(b,1) || size(a,2) ~= size(b,2)
+                error('ERROR: Invalid addition. Check your dimensions.');
+            end
+            
+            if isa(b, 'imf.Vector') && a.coordinateSystem ~= b.coordinateSystem
+                error('ERROR: Invalid addition. Check your coordinate systems.')
+            end
+            
+            if ~strcmp(class(a), class(b))
+                error('ERROR: Invalid addition. Check your types.')
+            end
+            
+            if isa(b, 'imf.PositionVector')
+                out = imf.PositionVector(getExpression(a) + getExpression(b), a.coordinateSystem);
+            elseif isa(b, 'imf.AttitudeVector')
+                out = imf.AttitudeVector(getExpression(a) + getExpression(b), a.coordinateSystem);
+            elseif isa(b, 'imf.AngularVelocity')
+                out = imf.AngularVelocity(getExpression(a) + getExpression(b), a.coordinateSystem);
+            else
+                out = imf.Vector(getExpression(a) + getExpression(b), a.coordinateSystem);
+            end
+        end
+        
+        function out = minus(a,b)
+            if size(a,1) ~= size(b,1) || size(a,2) ~= size(b,2)
+                error('ERROR: Invalid subtraction. Check your dimensions.');
+            end
+            
+            if isa(b, 'imf.Vector') && a.coordinateSystem ~= b.coordinateSystem
+                error('ERROR: Invalid subtraction. Check your coordinate systems.')
+            end
+            
+            if ~strcmp(class(a), class(b))
+                error('ERROR: Invalid subtraction. Check your types.')
+            end
+            
+            if isa(b, 'imf.PositionVector')
+                out = imf.PositionVector(getExpression(a) - getExpression(b), a.coordinateSystem);
+            elseif isa(b, 'imf.AttitudeVector')
+                out = imf.AttitudeVector(getExpression(a) - getExpression(b), a.coordinateSystem);
+            elseif isa(b, 'imf.AngularVelocity')
+                out = imf.AngularVelocity(getExpression(a) - getExpression(b), a.coordinateSystem);
+            else
+                out = imf.Vector(getExpression(a) - getExpression(b), a.coordinateSystem);
             end
         end
         

@@ -31,23 +31,39 @@ classdef RotationMatrix < handle
     end
     
     methods(Static)
-        function T = T1(gc)
+        function T = T1(v)
             fun = [1        0        0;
-                0        cos(gc)  sin(gc);
-                0        -sin(gc) cos(gc)];
-            T = imf.RotationMatrix(fun, 1, gc);
+                0        cos(v)  sin(v);
+                0        -sin(v) cos(v)];
+            if isa(v, 'imf.GeneralizedCoordinate')
+                T = imf.RotationMatrix(fun, 1, v);
+            else
+                T = imf.RotationMatrix(fun, 1);
+            end
         end
-        function T = T2(gc)
-            fun = [cos(gc)   0      -sin(gc);
+        function T = T2(v)
+            fun = [cos(v)   0      -sin(v);
                 0         1      0;
-                sin(gc)   0      cos(gc)];
-            T = imf.RotationMatrix(fun, 2, gc);
+                sin(v)   0      cos(v)];
+            if isa(v, 'imf.GeneralizedCoordinate')
+                T = imf.RotationMatrix(fun, 2, v);
+            else
+                T = imf.RotationMatrix(fun, 2);
+            end
         end
-        function T = T3(gc)
-            fun = [cos(gc)   sin(gc) 0;
-                -sin(gc)  cos(gc) 0;
+        function T = T3(v)
+            fun = [cos(v)   sin(v) 0;
+                -sin(v)  cos(v) 0;
                 0         0       1];
-            T = imf.RotationMatrix(fun, 3, gc);
+            if isa(v, 'imf.GeneralizedCoordinate')
+                T = imf.RotationMatrix(fun, 3, v);
+            else
+                T = imf.RotationMatrix(fun, 3);
+            end
+        end
+        function T = I
+            fun = eye(3);
+            T = imf.RotationMatrix(fun);
         end
     end
     
@@ -70,14 +86,91 @@ classdef RotationMatrix < handle
             if nargin > 2
                 if isa(varargin{2}, 'imf.GeneralizedCoordinate')
                     obj.generalizedCoordinate = varargin{2};
+                elseif isa(varargin{2}, 'imf.Variable')
                 else
-                    error('The third argument need to be an imf.GeneralizedCoordinate');
+                    error('The third argument need to be an imf.Variable');
                 end
             end
         end
         
-        function r = mtimes(a,b)
-            r = imf.RotationMatrix(a.expr * b.expr);
+        function out = getExpression(obj)
+            out = obj.expr;
+        end
+        
+        function out = length(obj)
+            out = builtin('length', obj.expr);
+        end
+        
+        function varargout = size(obj, dim)
+            if nargin < 2
+                [varargout{1:nargout}] = builtin('size', obj.expr);
+            else
+                [varargout{1:nargout}] = builtin('size', obj.expr, dim);
+            end
+        end
+        
+        function out = eq(a,b)
+            out = eq(getExpression(a), getExpression(b));
+        end
+        
+        function out = ne(a,b)
+            out = ne(getExpression(a), getExpression(b));
+        end
+        
+        function out = subsref(obj, s)
+            switch s(1).type
+                case '.'
+                    out = builtin('subsref', obj, s);
+                case '()'
+                    if isa(obj, 'imf.RotationMatrix') && isvector(obj)
+                        out = builtin('subsref', obj, s);
+                    else
+                        if length(s(1).subs) == 1
+                            [m,n] = ind2sub(size(obj), s(1).subs{1});
+                        else
+                            m = s(1).subs{1};
+                            n = s(1).subs{2};
+                        end
+                        
+                        if builtin('length', obj) == 1
+                            out = obj.expr(m,n);
+                        else
+                            if builtin('length', s) == 1
+                                out = obj(m,n);
+                            else
+                                out = builtin('subsref', obj(m,n), s(2:end));
+                            end
+                        end
+                    end
+                otherwise
+                    error('This indexing is not supported.');
+            end
+        end
+        
+        function out = mtimes(a,b)
+            A = a.expr;
+            
+            if isa(b, 'imf.RotationMatrix')
+                B = b.expr;
+                out = imf.RotationMatrix(simplify(A * B));
+            elseif isa(b, 'imf.PositionVector')
+                B = b.items;
+                out = imf.PositionVector(simplify(A * B), b.coordinateSystem);
+            elseif isa(b, 'imf.AttitudeVector')
+                B = b.items;
+                out = imf.AttitudeVector(simplify(A * B), b.coordinateSystem);
+            elseif isa(b, 'imf.AngularVelocity')
+                B = b.items;
+                out = imf.AngularVelocity(simplify(A * B), b.coordinateSystem);
+            elseif isa(b, 'imf.Vector')
+                B = b.items;
+                out = imf.Vector(simplify(A * B), b.coordinateSystem);
+            elseif isnumeric(b) && ismatrix(b)
+                B = imf.Expression(b);
+                out = imf.RotationMatrix(simplify(A * B));
+            else
+                error('This multiplication is not implemented.')
+            end         
         end
         
         function out = ctranspose(in)
