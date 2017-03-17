@@ -43,7 +43,7 @@ classdef CoordinateSystem < handle
         end
         
         function r = eq(a,b)
-            if a.name == b.name
+            if strcmp(a.name, b.name)
                 r = 1;
             else
                 r = 0;

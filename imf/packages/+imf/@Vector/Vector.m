@@ -117,7 +117,33 @@ classdef Vector < imf.VectorspaceElement
             else
                 out = obj;
             end
-        end        
+        end
+        
+        function s = toString(obj)
+            s = getExpression(obj);
+        end
+        
+        function out = mtimes(a,b)
+            A = a.items;
+            
+            if isa(b, 'imf.Vector')
+                if a.coordinateSystem ~= b.coordinateSystem
+                    error('The factors must be in the same coordinate system.');
+                end
+                
+                B = b.items;
+                out = imf.Vector(simplify(A * B), b.coordinateSystem);
+            elseif isnumeric(b) && isvector(b)
+                B = imf.Expression(b);
+                out = imf.Vector(simplify(A * B), a.coordinateSystem);
+            else
+                error('This multiplication is not implemented.')
+            end
+            
+            if length(out) == 1
+                out = getExpression(out);
+            end
+        end
         
         function out = eq(a,b)
             out = eq(getExpression(a), getExpression(b));
