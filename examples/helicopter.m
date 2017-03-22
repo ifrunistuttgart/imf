@@ -51,7 +51,7 @@ r = imf.PositionVector([0 0 0]', F1);
 model.Add(imf.Body('b1', m, r));
 
 vu = imf.Vector(Vu*[cos(a); 0; -sin(a)], H);
-dr = dot(r.In(H));
+dr = d(r.In(H));
 v = dr + vu;
 v = v.In(F1);
 v.items(1) = 0; % ignore airflow parallel to the blade
@@ -79,13 +79,16 @@ opt = odeset('mass',@(t,x) modelM(t, x, [Vuv; av; Ov; ev; Rv; mv; Abv]), 'RelTol
 [tsol,ysol] = ode15s(@(t,x) modelF(t, x, [Vuv; av; Ov; ev; Rv; mv; Abv]), tspan, xy0, opt);
 
 figure
+subplot(2,1,1)
 grid on
 hold on
 plot(tsol, ysol(:,1).*180/pi)
-legend('\beta')
+h = legend('$\beta$');
+set(h,'Interpreter','latex')
 
-figure
+subplot(2,1,2)
 grid on
 hold on
 plot(tsol, ysol(:,2))
-legend('\dot{\beta}')
+h = legend('$\dot{\beta}$');
+set(h,'Interpreter','latex')

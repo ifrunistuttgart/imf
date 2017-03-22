@@ -106,8 +106,10 @@ v = VideoWriter('visualization.mp4', 'MPEG-4');
 v.FrameRate = 1/dt;
 open(v)
 for i=1:length(ysol)
-    visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(i,1), ysol(i,2), ysol(i,3), m1v, m2v, m3v, lv], 'axis', limits, 'view', [0 0], 'revz', 1)
-    frame = getframe;
+    fh = visualize(m, {q1, q2, q3, m1, m2, m3, l}, [ysol(i,1), ysol(i,2), ysol(i,3), m1v, m2v, m3v, lv], 'axis', limits, 'view', [0 0], 'revz', 1);
+    fh.PaperUnits = 'points';
+    fh.PaperPosition =[0 0 921.6 518.4];
+    frame = print('-RGBImage');
     writeVideo(v,frame);
 end
 close(v)

@@ -41,8 +41,8 @@ m.gravity = imf.Gravity(g, I);
 m.Add(imf.Body('b1', m1, imf.PositionVector([0,0,0]', c1)));
 m.Add(imf.Body('b2', m2, imf.PositionVector([sin(q2)*l,0,cos(q2)*l]', c1)));
 
-m.Add(imf.Moment('Md1', imf.Vector([0;-kd*dot(q1);0], I), imf.AttitudeVector([0;q1;0], I)));
-m.Add(imf.Moment('Md2', imf.Vector([0;-kd*dot(q2);0], c1), imf.AttitudeVector([0;q2;0], c1)));
+m.Add(imf.Moment('Md1', imf.Vector([0;-kd*d(q1);0], I), imf.AttitudeVector([0;q1;0], I)));
+m.Add(imf.Moment('Md2', imf.Vector([0;-kd*d(q2);0], c1), imf.AttitudeVector([0;q2;0], c1)));
 
 %%
 model = m.Compile();
