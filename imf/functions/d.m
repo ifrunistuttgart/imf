@@ -24,8 +24,8 @@
 
 function out = d(varargin)
 
-if isa(varargin{1}, 'imf.GenerializedCoordinate')
-    out = imf.Dot(varargin);
+if isa(varargin{1}, 'imf.GeneralizedCoordinate')
+    out = imf.Dot(varargin{1});
 elseif isa(varargin{1}, 'imf.Vector') || isa(varargin{1}, 'imf.Expression')
     gc = genCoordinates;
     out = functionalDerivative(varargin{1}, gc);

@@ -29,7 +29,7 @@ GeneralizedCoordinate q1 q2 q3 q4
 CoordinateSystem I c1
 Parameter m1 l ri ra h
 
-T21 = imf.Transformation(I, c1, imf.RotationMatrix.T3(q1), imf.RotationMatrix.T2(q2), imf.RotationMatrix.T1(q3), imf.Vector([-l;0;0], c1));
+imf.Transformation(I, c1, imf.RotationMatrix.T3(q1), imf.RotationMatrix.T2(q2), imf.RotationMatrix.T1(q3), imf.Vector([-l;0;0], c1));
 
 %%
 m = imf.Model(I);

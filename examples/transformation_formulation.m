@@ -33,7 +33,7 @@ Parameter m1 m2 l
 
 %%
 % Transformation from System I to System c1
-T21 = imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([0;0;-l], c1));
+imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([0;0;-l], c1));
 
 %%
 m = imf.Model(I);
@@ -81,7 +81,7 @@ Parameter m1 m2 l
 
 %%
 % Transformation from System I to System c1
-T21 = imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([sin(q1)*l;0;cos(q1)*l], I));
+imf.Transformation(I, c1, imf.RotationMatrix.T2(q1), imf.Vector([sin(q1)*l;0;cos(q1)*l], I));
 
 %%
 m = imf.Model(I);

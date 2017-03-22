@@ -34,6 +34,7 @@ tests{end+1} = 'two_mass_pendulum.m';
 tests{end+1} = 'spheric.m';
 tests{end+1} = 'inertia.m';
 tests{end+1} = 'rotation.m';
+tests{end+1} = 'damping.m';
 
 for i=1:length(tests)
     try
@@ -42,6 +43,8 @@ for i=1:length(tests)
     catch 
         error(['Test ' tests{i} ' failed. Aborting.']);
     end
+    clearvars -except tests
+    close all
 end
 
 disp('Finished running all tests.');
