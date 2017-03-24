@@ -33,4 +33,14 @@ if rcf ~= rcs
 end
 
 %%
+if length(T.rotations) ~= 2
+    error('FAILED: transformation chain length wrong.');
+end
+
+if T.rotations{1} ~= imf.RotationMatrix.T3(q1) || ...
+    T.rotations{2} ~= imf.RotationMatrix.T2(q2)
+    error('FAILED: transformation chain order incorrect.');    
+end
+
+%%
 disp('Test ran successfully.')
