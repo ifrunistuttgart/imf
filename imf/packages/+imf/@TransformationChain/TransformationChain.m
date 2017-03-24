@@ -65,6 +65,13 @@ classdef TransformationChain < handle
             end
             T = imf.RotationMatrix(T);
         end
+        
+        function out = rotations(obj)
+            out = cell(0);
+            for i=1:length(obj.transformations)
+                out{end+1} = obj.transformations(i).rotation;
+            end
+        end
     end
     
 end
