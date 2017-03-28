@@ -69,7 +69,9 @@ classdef TransformationChain < handle
         function out = rotations(obj)
             out = cell(0);
             for i=1:length(obj.transformations)
-                out{end+1} = obj.transformations(i).rotation;
+                for j=1:length(obj.transformations(i).rotations)
+                    out{end+1} = obj.transformations(i).rotations{j};
+                end
             end
         end
     end
