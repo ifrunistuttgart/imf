@@ -54,7 +54,8 @@ classdef AngularVelocity < imf.Vector
                         % TODO: should be accessible via v(idx) but is not
                         v.items(T.rotations{i}.axis) = dot(T.rotations{i}.generalizedCoordinate);
                         if i < length(T.rotations)
-                            R = T.rotations(i+1:end);
+                            rots = T.rotations;
+                            R = rots(i+1:end);
                             if length(R) > 1
                                 for j=1:length(R)
                                     v = R{j} * v;

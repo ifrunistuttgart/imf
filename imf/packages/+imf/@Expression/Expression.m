@@ -655,23 +655,30 @@ classdef Expression < handle
             
             vars = sym.empty(0, 1);
             for i = 1:length(IMF_.helper.x)
-                eval(['syms ' IMF_.helper.x{i}.name '(t)']);
-                eval(['vars(i,1) = ' IMF_.helper.x{i}.name ';']);
+                eval(['syms imf_q' IMF_.helper.x{i}.name '(t)']);
+                eval(['vars(i,1) = imf_q' IMF_.helper.x{i}.name ';']);
             end
             
             params = sym.empty(0, 1);
             for i = 1:length(IMF_.helper.param)
-                eval(['syms ' IMF_.helper.param{i}.name]);
-                eval(['params(i,1) = ' IMF_.helper.param{i}.name ';']);
+                eval(['syms imf_p' IMF_.helper.param{i}.name]);
+                eval(['params(i,1) = imf_p' IMF_.helper.param{i}.name ';']);
             end
             
             tmp = [];
             for i = 1:length(obj)
                 tmp{i} = obj(i).expr.toString;
                 
-                for j = 1:length(IMF_.helper.x)
-                    tmp{i} = strrep(tmp{i}, ['ddot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t, t)']);
-                    tmp{i} = strrep(tmp{i}, ['dot(' IMF_.helper.x{j}.name ')'], ['diff(' IMF_.helper.x{j}.name '(t), t)']);
+                for j = 1:length(IMF_.helper.x)                    
+                    tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(ddot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' IMF_.helper.x{j}.name '(t), t, t)']);
+                    tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(dot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' IMF_.helper.x{j}.name '(t), t)']);
+                    tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(' IMF_.helper.x{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imf_q' IMF_.helper.x{j}.name]);
+                end
+                
+                for j = 1:length(IMF_.helper.param)
+                    % replace variable if it does not have a leading or
+                    % trailing alphanumeric symbol
+                    tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(' IMF_.helper.param{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imf_p' IMF_.helper.param{j}.name]);
                 end
             end
             
@@ -688,13 +695,13 @@ classdef Expression < handle
             symsex = 'syms t';
             for j = 1:length(var)
                 %symsex = [symsex ' ' var(j).expr.name '(t)'];
-                symsex = [symsex ' q' num2str(j) '(t)'];
+                symsex = [symsex ' imf_q' num2str(j) '(t)'];
             end
             eval(symsex);
             
             symsex = 'syms';
             for j = 1:length(IMF_.helper.param)
-                symsex = [symsex ' imfvar' num2str(j)];
+                symsex = [symsex ' imf_p' num2str(j)];
             end
             eval(symsex);
             
@@ -702,14 +709,14 @@ classdef Expression < handle
                 ex = obj(i).expr.toString;
                 
                 for j = 1:length(var)
-                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9]))(dot\(' var(j).expr.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(q' num2str(j) '(t), t)']);
-                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9]))(' var(j).expr.name ')(?!(?:[a-zA-Z0-9]+))'], ['q' num2str(j)]);
+                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9\_]))(dot\(' var(j).expr.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' num2str(j) '(t), t)']);
+                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9\_]))(' var(j).expr.name ')(?!(?:[a-zA-Z0-9]+))'], ['imf_q' num2str(j)]);
                 end
                 
                 for j = 1:length(IMF_.helper.param)
                     % replace variable if it does not have a leading or
                     % trailing alphanumeric symbol
-                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9]))(' IMF_.helper.param{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imfvar' num2str(j)]);
+                    ex = regexprep(ex, ['(?<!(?:[a-zA-Z0-9\_]))(' IMF_.helper.param{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imf_p' num2str(j)]);
                 end
                 
                 ex = eval(ex);
@@ -717,13 +724,13 @@ classdef Expression < handle
                 
                 d = char(dex);
                 for j = 1:length(var)
-                    d = strrep(d, ['diff(q' num2str(j) '(t), t)'], ['dot(q' num2str(j) '(t))']);
-                    d = strrep(d, ['diff(q' num2str(j) '(t), t, t)'], ['ddot(q' num2str(j) '(t))']);
-                    d = strrep(d, ['q' num2str(j) '(t)'], ['var(' num2str(j) ')']);
+                    d = strrep(d, ['diff(imf_q' num2str(j) '(t), t)'], ['dot(imf_q' num2str(j) '(t))']);
+                    d = strrep(d, ['diff(imf_q' num2str(j) '(t), t, t)'], ['ddot(imf_q' num2str(j) '(t))']);
+                    d = strrep(d, ['imf_q' num2str(j) '(t)'], ['var(' num2str(j) ')']);
                 end
                 
                 for j = 1:length(IMF_.helper.param)
-                    d = strrep(d, ['imfvar' num2str(j)], ['IMF_.helper.param{' num2str(j) '}']);
+                    d = strrep(d, ['imf_p' num2str(j)], ['IMF_.helper.param{' num2str(j) '}']);
                 end
                 
                 d = regexprep(d, '(?<!(?:[a-zA-Z0-9]))(t)(?!(?:[a-zA-Z0-9]+))', 'IMF_.t');
@@ -749,11 +756,11 @@ classdef Expression < handle
             disp(['Two functions have been created: @' [filename 'M'] '(t,q,params) and @' [filename 'F'] '(t,q,params).'])
             disp('The states are:')
             for i=1:length(newVars)
-                disp(['  Parameter ' num2str(i) ': ' char(newVars(i))]);
+                disp(['  Parameter ' num2str(i) ': ' regexprep(char(newVars(i)), '(imf\_.)', '')]);
             end
             disp('The function parameters are:')
             for i=1:length(params)
-                disp(['  Parameter ' num2str(i) ': ' char(params(i))]);
+                disp(['  Parameter ' num2str(i) ': ' regexprep(char(params(i)), '(imf\_.)', '')]);
             end
             disp('=======================================================')
             
