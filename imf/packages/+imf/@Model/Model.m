@@ -67,9 +67,8 @@ classdef Model < handle
             for i=1:length(obj.bodies)
                 b = obj.bodies(i);
                 m = b.mass;
-                jac = jacobian(b.positionVector, gc);
-                dr = functionalDerivative(b.positionVector, gc);
-                ddr = functionalDerivative(dr, gc);
+                jac = b.translationalJacobian;
+                ddr = b.translationalAcceleration;
                 
                 if isempty(system)
                     system = m*jac'*ddr;
@@ -80,13 +79,9 @@ classdef Model < handle
                 if ~isempty(b.inertia)
                     I = b.inertia.items;
                     
-                    for j=1:length(gc)
-                        dgc(j) = dot(gc(j));
-                    end
-                    
-                    jac = jacobian(b.angularVelocity, dgc);
+                    jac = b.rotationalJacobian;
                     w = b.angularVelocity;
-                    dw = functionalDerivative(w, gc);
+                    dw = b.rotationalAcceleration;
                     
                     if isempty(system)
                         system = jac'*(I*dw + cross(w,I*w));
@@ -121,6 +116,32 @@ classdef Model < handle
                     system = system - jac'*M.value;
                 end
             end
+        end
+        
+        
+        function matlabFunction(obj, filename)
+            
+            gc = genCoordinates;
+            M = imf.Expression( zeros(length(gc)) );
+            
+            for i=1:length(obj.bodies)
+                
+                b = obj.bodies(i);
+                m = b.mass;
+                jac = b.translationalJacobian;
+                
+                M = M + m*(jac'*jac);
+                
+                if ~isempty(b.inertia)
+                    I = b.inertia.items;                    
+                    jac = b.rotationalJacobian;
+                    
+                    M = M + jac'*I*jac;
+                end
+            end
+            
+            % substitute generalized coordinate second order derivatives
+           
         end
         
         function Add(obj, external)

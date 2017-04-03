@@ -61,8 +61,12 @@ classdef Expression < handle
         expr;
     end
     
+    properties(GetAccess = 'private')
+        cache@imf.Cache = imf.Cache();
+    end
+    
     methods
-        function obj = Expression( in )
+        function obj = Expression( in )            
             if nargin > 0
                 for i = 1:size(in,1)
                     for j = 1:size(in,2)
@@ -440,6 +444,14 @@ classdef Expression < handle
             end
         end
         
+        function out = isempty(obj)
+            out = 0;
+            
+            if length(obj) == 0
+                out = 1;
+            end
+        end
+        
         function C = horzcat(varargin)
             temp = varargin{1};
             for i = 1:size(temp,1)
@@ -616,11 +628,20 @@ classdef Expression < handle
         end
         
         function jac = jacobian(obj, var)
+            
             jac = imf.Expression.empty(length(obj), 0);
             for i = 1:length(obj)
+                
+                if obj(i).cache.contains('jacobian')
+                    jac(i,:) = obj(i).cache.get('jacobian');
+                    continue;
+                end
+                
                 for j = 1:length(var)
                     jac(i,j) = imf.Expression(jacobian(obj(i).getExpression, var(j).getExpression));
                 end
+                
+                obj(i).cache.insertOrUpdate('jacobian', jac(i,:));
             end
         end
         
@@ -669,7 +690,7 @@ classdef Expression < handle
             for i = 1:length(obj)
                 tmp{i} = obj(i).expr.toString;
                 
-                for j = 1:length(IMF_.helper.x)                    
+                for j = 1:length(IMF_.helper.x)
                     tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(ddot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' IMF_.helper.x{j}.name '(t), t, t)']);
                     tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(dot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' IMF_.helper.x{j}.name '(t), t)']);
                     tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(' IMF_.helper.x{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imf_q' IMF_.helper.x{j}.name]);

@@ -32,6 +32,10 @@ classdef Body < handle
         angularVelocity@imf.AngularVelocity
     end
     
+    properties(GetAccess = 'private')
+        cache@imf.Cache = imf.Cache();
+    end
+    
     methods
         
         function obj = Body(name, mass, positionVector, inertia, angularVector)
@@ -90,6 +94,54 @@ classdef Body < handle
             end
         end
         
+        function out = rotationalJacobian(obj)
+            gc = genCoordinates;
+            
+            for j=1:length(gc)
+                dgc(j) = d(gc(j));
+            end
+            
+            if obj.cache.contains('RotationalJacobian')
+                out = obj.cache.get('RotationalJacobian');
+            else
+                out = jacobian(obj.angularVelocity, dgc);
+                obj.cache.insertOrUpdate('RotationalJacobian', out);
+            end
+        end
+        
+        function out = translationalJacobian(obj)
+            gc = genCoordinates;
+            
+            if obj.cache.contains('TranslationalJacobian')
+                out = obj.cache.get('TranslationalJacobian');
+            else
+                out = jacobian(obj.positionVector, gc);
+                obj.cache.insertOrUpdate('TranslationalJacobian', out);
+            end
+        end
+        
+        function out = rotationalAcceleration(obj)
+            gc = genCoordinates;
+            
+            if obj.cache.contains('RotationalAcceleration')
+                out = obj.cache.get('RotationalAcceleration');
+            else
+                out = functionalDerivative(obj.angularVelocity, gc);
+                obj.cache.insertOrUpdate('RotationalAcceleration', out);
+            end
+        end
+        
+        function out = translationalAcceleration(obj)
+            gc = genCoordinates;
+            
+            if obj.cache.contains('TranslationalAcceleration')
+                out = obj.cache.get('TranslationalAcceleration');
+            else
+                dr = functionalDerivative(obj.positionVector, gc);
+                out = functionalDerivative(dr, gc);
+                obj.cache.insertOrUpdate('TranslationalAcceleration', out);
+            end
+        end
     end
     
 end
