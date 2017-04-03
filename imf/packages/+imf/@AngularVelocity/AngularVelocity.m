@@ -52,7 +52,7 @@ classdef AngularVelocity < imf.Vector
                     for i=1:length(T.rotations)
                         v = imf.AngularVelocity([0;0;0], out.coordinateSystem);
                         % TODO: should be accessible via v(idx) but is not
-                        v.items(T.rotations{i}.axis) = dot(T.rotations{i}.generalizedCoordinate);
+                        v.items(T.rotations{i}.axis) = d(T.rotations{i}.generalizedCoordinate);
                         if i < length(T.rotations)
                             rots = T.rotations;
                             R = rots(i+1:end);
