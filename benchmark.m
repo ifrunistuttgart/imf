@@ -96,5 +96,25 @@ toc
 %%
 disp('Time for Matlab Function')
 tic
-sdeq.matlabFunction('mini');
+model.matlabFunction('benchmark');
 toc
+%%
+
+Fa1v = 1;
+Ma1v = 1;
+Mt1v = 0;
+O1 = 1;
+
+xy0 = [0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+tspan = linspace(0,7,100);
+
+disp('Time for Simulation')
+tic
+%opt = odeset('mass',@(t,x) benchmarkM(t, x, [Fa1v; Ma1v; Mt1v; O1]));
+[tsol,ysol] = ode45(@(t,x) benchmarkM(t, x, [Fa1v; Ma1v; Mt1v; O1]) \ benchmarkF(t, x, [Fa1v; Ma1v; Mt1v; O1]), tspan, xy0);
+toc
+
+figure
+grid on
+hold on
+plot(tsol, ysol)

@@ -22,8 +22,8 @@
 %    Author: Pascal Gross <pascal.gross@ifr.uni-stuttgart.de>
 %    Date: 2017
 
-classdef Cache
-    properties
+classdef Cache < handle
+    properties(GetAccess = 'private')
         values@imf.CacheValue vector = imf.CacheValue.empty;
     end
     

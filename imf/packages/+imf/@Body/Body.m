@@ -95,48 +95,49 @@ classdef Body < handle
         end
         
         function out = rotationalJacobian(obj)
-            gc = genCoordinates;
-            
-            for j=1:length(gc)
-                dgc(j) = d(gc(j));
-            end
             
             if obj.cache.contains('RotationalJacobian')
                 out = obj.cache.get('RotationalJacobian');
             else
+                gc = genCoordinates;
+                
+                for j=1:length(gc)
+                    dgc(j) = d(gc(j));
+                end
+                
                 out = jacobian(obj.angularVelocity, dgc);
                 obj.cache.insertOrUpdate('RotationalJacobian', out);
             end
         end
         
         function out = translationalJacobian(obj)
-            gc = genCoordinates;
             
             if obj.cache.contains('TranslationalJacobian')
                 out = obj.cache.get('TranslationalJacobian');
             else
+                gc = genCoordinates;
                 out = jacobian(obj.positionVector, gc);
                 obj.cache.insertOrUpdate('TranslationalJacobian', out);
             end
         end
         
         function out = rotationalAcceleration(obj)
-            gc = genCoordinates;
             
             if obj.cache.contains('RotationalAcceleration')
                 out = obj.cache.get('RotationalAcceleration');
             else
+                gc = genCoordinates;
                 out = functionalDerivative(obj.angularVelocity, gc);
                 obj.cache.insertOrUpdate('RotationalAcceleration', out);
             end
         end
         
         function out = translationalAcceleration(obj)
-            gc = genCoordinates;
             
             if obj.cache.contains('TranslationalAcceleration')
                 out = obj.cache.get('TranslationalAcceleration');
             else
+                gc = genCoordinates;
                 dr = functionalDerivative(obj.positionVector, gc);
                 out = functionalDerivative(dr, gc);
                 obj.cache.insertOrUpdate('TranslationalAcceleration', out);

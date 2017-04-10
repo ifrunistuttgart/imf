@@ -35,6 +35,10 @@ classdef Model < handle
         gravity@imf.Gravity
     end
     
+    properties(GetAccess = 'private')
+        cache@imf.Cache = imf.Cache();
+    end
+    
     methods
         function obj = Model(inertialSystem)
             global IMF_;
@@ -55,6 +59,11 @@ classdef Model < handle
         end
         
         function system = Compile(obj)
+            
+            if obj.cache.contains('CompiledModel')
+                system = obj.cache.get('CompiledModel');
+                return
+            end
             
             gc = genCoordinates;
             
@@ -115,11 +124,15 @@ classdef Model < handle
                 else
                     system = system - jac'*M.value;
                 end
-            end
+            end            
+            
+            obj.cache.insertOrUpdate('CompiledModel', system);
         end
         
         
         function matlabFunction(obj, filename)
+            
+            global IMF_;
             
             gc = genCoordinates;
             M = imf.Expression( zeros(length(gc)) );
@@ -133,7 +146,7 @@ classdef Model < handle
                 M = M + m*(jac'*jac);
                 
                 if ~isempty(b.inertia)
-                    I = b.inertia.items;                    
+                    I = b.inertia.items;
                     jac = b.rotationalJacobian;
                     
                     M = M + jac'*I*jac;
@@ -141,7 +154,77 @@ classdef Model < handle
             end
             
             % substitute generalized coordinate second order derivatives
+            
+            fidM = fopen([filename 'M.m'], 'w');
+            fidF = fopen([filename 'F.m'], 'w');
+            fprintf(fidM, 'function expr = %sM(t, in2, in3)\r\n', filename);
+            fprintf(fidF, 'function expr = %sF(t, in2, in3)\r\n', filename);
+            
+            n = length(IMF_.helper.x);
+            
+            for i = 1:n
+                fprintf(fidM, '%s = in2(%d,:);\r\n', IMF_.helper.x{i}.name, i);
+                fprintf(fidF, '%s = in2(%d,:);\r\n', IMF_.helper.x{i}.name, i);
+            end
+            fprintf(fidF, '\r\n');
+            fprintf(fidM, '\r\n');
+            
+            for i = 1:n
+                fprintf(fidM, 'd%sdt = in2(%d,:);\r\n', IMF_.helper.x{i}.name, n+i);
+                fprintf(fidF, 'd%sdt = in2(%d,:);\r\n', IMF_.helper.x{i}.name, n+i);
+            end
+            fprintf(fidF, '\r\n');
+            fprintf(fidM, '\r\n');
+            
+            for i = 1:length(IMF_.helper.param)
+                fprintf(fidM, '%s = in3(%d,:);\r\n', IMF_.helper.param{i}.name, i);
+                fprintf(fidF, '%s = in3(%d,:);\r\n', IMF_.helper.param{i}.name, i);
+            end
+            fprintf(fidF, '\r\n');
+            fprintf(fidM, '\r\n');
+            
+            fprintf(fidM, 'expr = zeros(%d);\r\n', 2*n);
+            fprintf(fidM, 'expr(1:%d, 1:%d) = eye(%d);\r\n', n, n, n);            
+            for i=1:n
+                for j=1:n
+                    fprintf(fidM, 'expr(%d,%d) = %s;\r\n', i+n, j+n, M(i,j).toString());
+                end
+            end
+            fprintf(fidM, '\r\n');
            
+            system = Compile(obj);
+            fprintf(fidF, 'expr = zeros(%d, 1);\r\n', 2*n);
+            for i=1:n
+                    fprintf(fidF, 'expr(%d, 1) = d%sdt;\r\n', i, IMF_.helper.x{i}.name);
+                    eq = system(i).toString();
+                    for j=1:n
+                        eq = regexprep(eq, ['(?<!(?:[a-zA-Z0-9]))(ddot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], '0');
+                        eq = regexprep(eq, ['(?<!(?:[a-zA-Z0-9]))(dot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['d' IMF_.helper.x{j}.name 'dt']);
+                    end
+                    fprintf(fidF, 'expr(%d, 1) = -1*%s;\r\n', i+n, eq);
+            end
+            fprintf(fidF, '\r\n');
+            
+            fprintf(fidM, 'end\r\n');
+            fprintf(fidF, 'end\r\n');
+            fclose(fidM);
+            fclose(fidF);            
+            
+            disp('======================== DONE =========================')
+            disp('Generation for MATLAB function completed.')
+            disp(['Two functions have been created: @' [filename 'M'] '(t,q,params) and @' [filename 'F'] '(t,q,params).'])
+            disp('The states are:')
+            for i=1:n
+                disp(['  Parameter ' num2str(i) ': ' IMF_.helper.x{i}.name]);
+            end
+            for i=1:n
+                disp(['  Parameter ' num2str(i+n) ': d' IMF_.helper.x{i}.name 'dt']);
+            end
+            disp('The function parameters are:')
+            for i=1:length(IMF_.helper.param)
+                disp(['  Parameter ' num2str(i) ': ' IMF_.helper.param{i}.name]);
+            end
+            disp('=======================================================')
         end
         
         function Add(obj, external)

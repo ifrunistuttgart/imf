@@ -630,10 +630,11 @@ classdef Expression < handle
         function jac = jacobian(obj, var)
             
             jac = imf.Expression.empty(length(obj), 0);
+            n = length(var);
             for i = 1:length(obj)
                 
                 if obj(i).cache.contains('jacobian')
-                    jac(i,:) = obj(i).cache.get('jacobian');
+                    jac(i,1:n) = obj(i).cache.get('jacobian');
                     continue;
                 end
                 
@@ -761,30 +762,6 @@ classdef Expression < handle
             if size(obj, 1) > size(obj, 2)
                 out = out';
             end
-        end
-        
-        function matlabFunction(obj, filename)
-            
-            [eqs, vars, params] = obj.symbolic;
-            [newEqs, newVars] = reduceDifferentialOrder(eqs, vars);
-            newEqs = simplify(newEqs);
-            [M, F] = massMatrixForm(newEqs, newVars);
-            odeFunction(M, newVars, params, 'File', [filename 'M']);
-            odeFunction(F, newVars, params, 'File', [filename 'F']);
-            
-            disp('======================== DONE =========================')
-            disp('Generation for MATLAB function completed.')
-            disp(['Two functions have been created: @' [filename 'M'] '(t,q,params) and @' [filename 'F'] '(t,q,params).'])
-            disp('The states are:')
-            for i=1:length(newVars)
-                disp(['  Parameter ' num2str(i) ': ' regexprep(char(newVars(i)), '(imf\_.)', '')]);
-            end
-            disp('The function parameters are:')
-            for i=1:length(params)
-                disp(['  Parameter ' num2str(i) ': ' regexprep(char(params(i)), '(imf\_.)', '')]);
-            end
-            disp('=======================================================')
-            
         end
     end
     
