@@ -130,7 +130,7 @@ classdef Model < handle
         end
         
         
-        function matlabFunction(obj, filename)
+        function matlabFunction(obj, filename, optimize)
             
             global IMF_;
             
