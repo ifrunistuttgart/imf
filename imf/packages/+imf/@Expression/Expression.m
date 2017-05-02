@@ -62,11 +62,14 @@ classdef Expression < handle
     end
     
     properties(GetAccess = 'private')
-        cache@imf.Cache = imf.Cache();
+        cache@imf.Cache;
     end
     
     methods
-        function obj = Expression( in )            
+        function obj = Expression( in )
+            
+            obj.cache = imf.Cache();
+            
             if nargin > 0
                 for i = 1:size(in,1)
                     for j = 1:size(in,2)
@@ -345,12 +348,17 @@ classdef Expression < handle
             end
         end
         
-        function s = toString(obj)
-            if ~isempty(obj.expr)
-                s = obj.expr.toString;
+        function s = toString(obj)            
+            if obj.cache.contains('String')
+                s = obj.cache.get('String');
             else
-                s = obj.name;
-            end
+                if ~isempty(obj.expr)
+                    s = obj.expr.toString;
+                else
+                    s = obj.name;
+                end
+                obj.cache.insertOrUpdate('String', s);
+            end            
         end
         
         function out = eq(a,b)

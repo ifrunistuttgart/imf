@@ -38,14 +38,14 @@ m.Add(imf.Body('b1', m1, imf.PositionVector([sin(q1)*l,0,cos(q1)*l]', I)));
 
 %%
 model = m.Compile();
-model.matlabFunction('model');
+m.matlabFunction('model');
 
 %%
 m1v = 0.1;
 lv = 1;
 
-xy0 = [pi/4 0];
-xyp0 = [0 0];
+xy0 = [pi/4; 0];
+xyp0 = [0; 0];
 tspan = linspace(0,7,100);
 
 opt = odeset('mass',@(t,x) modelM(t, x, [m1v;lv]), 'RelTol', 10^(-6), 'AbsTol', 10^(-6), 'InitialSlope', xyp0);

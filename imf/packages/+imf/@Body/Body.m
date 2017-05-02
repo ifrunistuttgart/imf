@@ -33,12 +33,14 @@ classdef Body < handle
     end
     
     properties(GetAccess = 'private')
-        cache@imf.Cache = imf.Cache();
+        cache@imf.Cache;
     end
     
     methods
         
         function obj = Body(name, mass, positionVector, inertia, angularVector)
+            
+            obj.cache = imf.Cache();
             
             if ischar(name) && ~isempty(mass)
                 obj.name = name;
@@ -94,54 +96,20 @@ classdef Body < handle
             end
         end
         
-        function out = rotationalJacobian(obj)
-            
-            if obj.cache.contains('RotationalJacobian')
-                out = obj.cache.get('RotationalJacobian');
-            else
-                gc = genCoordinates;
-                
-                for j=1:length(gc)
-                    dgc(j) = d(gc(j));
-                end
-                
-                out = jacobian(obj.angularVelocity, dgc);
-                obj.cache.insertOrUpdate('RotationalJacobian', out);
-            end
+        function out = rotationalJacobian(obj)            
+            out = obj.angularVelocity.Jacobian;
         end
         
         function out = translationalJacobian(obj)
-            
-            if obj.cache.contains('TranslationalJacobian')
-                out = obj.cache.get('TranslationalJacobian');
-            else
-                gc = genCoordinates;
-                out = jacobian(obj.positionVector, gc);
-                obj.cache.insertOrUpdate('TranslationalJacobian', out);
-            end
+            out = obj.positionVector.Jacobian;
         end
         
         function out = rotationalAcceleration(obj)
-            
-            if obj.cache.contains('RotationalAcceleration')
-                out = obj.cache.get('RotationalAcceleration');
-            else
-                gc = genCoordinates;
-                out = functionalDerivative(obj.angularVelocity, gc);
-                obj.cache.insertOrUpdate('RotationalAcceleration', out);
-            end
+            out = obj.angularVelocity.Acceleration;
         end
         
         function out = translationalAcceleration(obj)
-            
-            if obj.cache.contains('TranslationalAcceleration')
-                out = obj.cache.get('TranslationalAcceleration');
-            else
-                gc = genCoordinates;
-                dr = functionalDerivative(obj.positionVector, gc);
-                out = functionalDerivative(dr, gc);
-                obj.cache.insertOrUpdate('TranslationalAcceleration', out);
-            end
+            out = obj.positionVector.Acceleration;
         end
     end
     

@@ -22,11 +22,16 @@
 %    Author: Pascal Gross <pascal.gross@ifr.uni-stuttgart.de>
 %    Date: 2017
 
-classdef AngularVelocity < imf.Vector
+classdef AngularVelocity < imf.Vector    
+    
+    properties(GetAccess = 'private')
+        cache@imf.Cache;
+    end
     
     methods
         function obj = AngularVelocity(value, coordinateSystem)
             obj = obj@imf.Vector(value, coordinateSystem);
+            obj.cache = imf.Cache();
         end
         
         function out = In(obj, coordinateSystem)
@@ -72,5 +77,29 @@ classdef AngularVelocity < imf.Vector
             end
         end
 
+        function out = Acceleration(obj)
+            if obj.cache.contains('Acceleration')
+                out = obj.cache.get('Acceleration');
+            else
+                gc = genCoordinates;
+                out = functionalDerivative(obj, gc);
+                obj.cache.insertOrUpdate('Acceleration', out);
+            end
+        end
+        
+        function out = Jacobian(obj)            
+            if obj.cache.contains('Jacobian')
+                out = obj.cache.get('Jacobian');
+            else
+                gc = genCoordinates;
+                
+                for j=1:length(gc)
+                    dgc(j) = d(gc(j));
+                end
+                
+                out = jacobian(obj, dgc);
+                obj.cache.insertOrUpdate('Jacobian', out);
+            end
+        end
     end    
 end
