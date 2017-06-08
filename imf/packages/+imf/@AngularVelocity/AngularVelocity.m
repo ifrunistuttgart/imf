@@ -72,6 +72,7 @@ classdef AngularVelocity < imf.Vector
                         out = out + v;
                     end
                     out.items = out.items.simplify;
+                    out.coordinateSystem = coordinateSystem;
                     obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
                 end                
             end
