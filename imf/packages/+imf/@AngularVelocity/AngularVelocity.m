@@ -22,11 +22,16 @@
 %    Author: Pascal Gross <pascal.gross@ifr.uni-stuttgart.de>
 %    Date: 2017
 
-classdef AngularVelocity < imf.Vector
+classdef AngularVelocity < imf.Vector    
+    
+    properties(GetAccess = 'private')
+        cache@imf.Cache;
+    end
     
     methods
         function obj = AngularVelocity(value, coordinateSystem)
             obj = obj@imf.Vector(value, coordinateSystem);
+            obj.cache = imf.Cache();
         end
         
         function out = In(obj, coordinateSystem)
@@ -52,7 +57,7 @@ classdef AngularVelocity < imf.Vector
                     for i=1:length(T.rotations)
                         v = imf.AngularVelocity([0;0;0], out.coordinateSystem);
                         % TODO: should be accessible via v(idx) but is not
-                        v.items(T.rotations{i}.axis) = dot(T.rotations{i}.generalizedCoordinate);
+                        v.items(T.rotations{i}.axis) = d(T.rotations{i}.generalizedCoordinate);
                         if i < length(T.rotations)
                             rots = T.rotations;
                             R = rots(i+1:end);
@@ -67,10 +72,35 @@ classdef AngularVelocity < imf.Vector
                         out = out + v;
                     end
                     out.items = out.items.simplify;
+                    out.coordinateSystem = coordinateSystem;
                     obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
                 end                
             end
         end
 
+        function out = Acceleration(obj)
+            if obj.cache.contains('Acceleration')
+                out = obj.cache.get('Acceleration');
+            else
+                gc = genCoordinates;
+                out = functionalDerivative(obj, gc);
+                obj.cache.insertOrUpdate('Acceleration', out);
+            end
+        end
+        
+        function out = Jacobian(obj)            
+            if obj.cache.contains('Jacobian')
+                out = obj.cache.get('Jacobian');
+            else
+                gc = genCoordinates;
+                
+                for j=1:length(gc)
+                    dgc(j) = d(gc(j));
+                end
+                
+                out = jacobian(obj, dgc);
+                obj.cache.insertOrUpdate('Jacobian', out);
+            end
+        end
     end    
 end

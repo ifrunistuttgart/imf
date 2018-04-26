@@ -23,10 +23,15 @@
 %    Date: 2017
 
 classdef PositionVector < imf.Vector
+        
+    properties(GetAccess = 'private')
+        cache@imf.Cache;
+    end
     
     methods
         function obj = PositionVector(val, coordinateSystem)
             obj = obj@imf.Vector(val, coordinateSystem);
+            obj.cache = imf.Cache();
         end
         
         function out = In(obj, coordinateSystem)
@@ -51,6 +56,27 @@ classdef PositionVector < imf.Vector
                     obj.representation{end+1} = struct('coordinateSystem', coordinateSystem, 'obj', out);
                 end
                 
+            end
+        end
+        
+        function out = Acceleration(obj)            
+            if obj.cache.contains('Acceleration')
+                out = obj.cache.get('Acceleration');
+            else
+                gc = genCoordinates;
+                dr = functionalDerivative(obj, gc);
+                out = functionalDerivative(dr, gc);
+                obj.cache.insertOrUpdate('Acceleration', out);
+            end
+        end
+        
+        function out = Jacobian(obj)            
+            if obj.cache.contains('Jacobian')
+                out = obj.cache.get('Jacobian');
+            else
+                gc = genCoordinates;
+                out = jacobian(obj, gc);
+                obj.cache.insertOrUpdate('Jacobian', out);
             end
         end
     end

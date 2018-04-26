@@ -35,9 +35,15 @@ classdef Model < handle
         gravity@imf.Gravity
     end
     
+    properties(GetAccess = 'private')
+        cache@imf.Cache;
+    end
+    
     methods
         function obj = Model(inertialSystem)
             global IMF_;
+            
+            obj.cache = imf.Cache();
             
             if nargin < 1
                 error('Please provide the inertial coordinate system.');
@@ -56,6 +62,11 @@ classdef Model < handle
         
         function system = Compile(obj)
             
+            if obj.cache.contains('CompiledModel')
+                system = obj.cache.get('CompiledModel');
+                return
+            end
+            
             gc = genCoordinates;
             
             if isempty(gc)
@@ -67,9 +78,8 @@ classdef Model < handle
             for i=1:length(obj.bodies)
                 b = obj.bodies(i);
                 m = b.mass;
-                jac = jacobian(b.positionVector, gc);
-                dr = functionalDerivative(b.positionVector, gc);
-                ddr = functionalDerivative(dr, gc);
+                jac = b.translationalJacobian;
+                ddr = b.translationalAcceleration;
                 
                 if isempty(system)
                     system = m*jac'*ddr;
@@ -80,13 +90,9 @@ classdef Model < handle
                 if ~isempty(b.inertia)
                     I = b.inertia.items;
                     
-                    for j=1:length(gc)
-                        dgc(j) = dot(gc(j));
-                    end
-                    
-                    jac = jacobian(b.angularVelocity, dgc);
+                    jac = b.rotationalJacobian;
                     w = b.angularVelocity;
-                    dw = functionalDerivative(w, gc);
+                    dw = b.rotationalAcceleration;
                     
                     if isempty(system)
                         system = jac'*(I*dw + cross(w,I*w));
@@ -121,6 +127,162 @@ classdef Model < handle
                     system = system - jac'*M.value;
                 end
             end
+            
+            obj.cache.insertOrUpdate('CompiledModel', system);
+        end
+        
+        
+        function matlabFunction(obj, filename, optimizeLevel)
+            
+            global IMF_;
+            
+            if nargin == 2
+                optimizeLevel = 0;
+            end
+            
+            gc = genCoordinates;
+            M = imf.Expression( zeros(length(gc)) );
+            
+            for i=1:length(obj.bodies)
+                
+                b = obj.bodies(i);
+                m = b.mass;
+                jac = b.translationalJacobian;
+                
+                M = M + m*(jac'*jac);
+                
+                if ~isempty(b.inertia)
+                    I = b.inertia.items;
+                    jac = b.rotationalJacobian;
+                    
+                    M = M + jac'*I*jac;
+                end
+            end
+            
+            for i=1:length(gc)
+                if strcmp(M(i,i).toString, '0')
+                    error(['Error: Singular mass matrix for generalized coordinate ' gc(i).toString '.']);
+                end
+            end
+            
+            % substitute generalized coordinate second order derivatives
+            
+            fidM = fopen([filename 'M.m'], 'w');
+            fidF = fopen([filename 'F.m'], 'w');
+            fprintf(fidM, 'function expr = %sM(t, in2, in3)\r\n', filename);
+            fprintf(fidF, 'function expr = %sF(t, in2, in3)\r\n', filename);
+            
+            n = length(IMF_.helper.x);
+            
+            for i = 1:n
+                fprintf(fidM, '%s = in2(%d,:);\r\n', IMF_.helper.x{i}.name, i);
+                fprintf(fidF, '%s = in2(%d,:);\r\n', IMF_.helper.x{i}.name, i);
+            end
+            fprintf(fidF, '\r\n');
+            fprintf(fidM, '\r\n');
+            
+            for i = 1:n
+                fprintf(fidM, 'd%sdt = in2(%d,:);\r\n', IMF_.helper.x{i}.name, n+i);
+                fprintf(fidF, 'd%sdt = in2(%d,:);\r\n', IMF_.helper.x{i}.name, n+i);
+            end
+            fprintf(fidF, '\r\n');
+            fprintf(fidM, '\r\n');
+            
+            for i = 1:length(IMF_.helper.param)
+                fprintf(fidM, '%s = in3(%d,:);\r\n', IMF_.helper.param{i}.name, i);
+                fprintf(fidF, '%s = in3(%d,:);\r\n', IMF_.helper.param{i}.name, i);
+            end
+            fprintf(fidF, '\r\n');
+            
+            eqs = [];
+            
+            % find function calls e.g. cos(q1) and replace by e1, e2, ...
+            for i=1:n
+                for j=1:n
+                    eqs{end+1} = M(i,j).toString();
+                end
+            end
+            
+            [eqs, vars] = optimizeModel(eqs, optimizeLevel);
+            
+            for i=1:length(vars)
+                if ~isempty(vars{i})
+                    fprintf(fidM, 'e%d = %s;\r\n', i, vars{i});
+                end
+            end
+            
+            fprintf(fidM, '\r\n');
+            
+            fprintf(fidM, 'expr = eye(%d);\r\n', n);
+            fprintf(fidM, 'expr(%d:%d,%d:%d) = [', n+1, 2*n, n+1, 2*n);
+            for i=1:length(eqs)
+                fprintf(fidM, '%s', eqs{i});
+                if mod(i,n) == 0 && i ~= length(eqs)
+                    fprintf(fidM, ';\r\n');
+                else
+                    if i ~= length(eqs)
+                        fprintf(fidM, ', ');
+                    end
+                end
+            end
+            fprintf(fidM, '];\r\n');
+            
+            fprintf(fidM, '\r\n');
+            
+            eqs = [];
+            
+            system = Compile(obj);
+            
+            for i=1:n
+                eqs{i} = system(i).toString();
+                for j=1:n
+                    eqs{i} = regexprep(eqs{i}, ['(?<!(?:[a-zA-Z0-9]))(ddot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], '0');
+                    eqs{i} = regexprep(eqs{i}, ['(?<!(?:[a-zA-Z0-9]))(dot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['d' IMF_.helper.x{j}.name 'dt']);
+                end
+            end
+            
+            [eqs, vars] = optimizeModel(eqs, optimizeLevel);
+            
+            for i=1:length(vars)
+                if ~isempty(vars{i})
+                    fprintf(fidF, 'e%d = %s;\r\n', i, vars{i});
+                end
+            end
+            
+            fprintf(fidF, 'expr = [\r\n');
+            for i=1:n
+                if i > 1
+                    fprintf(fidF, ';\r\n');
+                end
+                fprintf(fidF, '  d%sdt', IMF_.helper.x{i}.name);
+            end
+            for i=1:length(eqs)
+                fprintf(fidF, ';\r\n  -1*%s', eqs{i});
+            end
+            fprintf(fidF, '];\r\n');
+            
+            fprintf(fidF, '\r\n');
+            
+            fprintf(fidM, 'end\r\n');
+            fprintf(fidF, 'end\r\n');
+            fclose(fidM);
+            fclose(fidF);
+            
+            disp('======================== DONE =========================')
+            disp('Generation for MATLAB function completed.')
+            disp(['Two functions have been created: @' [filename 'M'] '(t,q,params) and @' [filename 'F'] '(t,q,params).'])
+            disp('The states are:')
+            for i=1:n
+                disp(['  Parameter ' num2str(i) ': ' IMF_.helper.x{i}.name]);
+            end
+            for i=1:n
+                disp(['  Parameter ' num2str(i+n) ': d' IMF_.helper.x{i}.name 'dt']);
+            end
+            disp('The function parameters are:')
+            for i=1:length(IMF_.helper.param)
+                disp(['  Parameter ' num2str(i) ': ' IMF_.helper.param{i}.name]);
+            end
+            disp('=======================================================')
         end
         
         function Add(obj, external)

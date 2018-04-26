@@ -61,8 +61,15 @@ classdef Expression < handle
         expr;
     end
     
+    properties(GetAccess = 'private')
+        cache@imf.Cache;
+    end
+    
     methods
         function obj = Expression( in )
+            
+            obj.cache = imf.Cache();
+            
             if nargin > 0
                 for i = 1:size(in,1)
                     for j = 1:size(in,2)
@@ -341,12 +348,17 @@ classdef Expression < handle
             end
         end
         
-        function s = toString(obj)
-            if ~isempty(obj.expr)
-                s = obj.expr.toString;
+        function s = toString(obj)            
+            if obj.cache.contains('String')
+                s = obj.cache.get('String');
             else
-                s = obj.name;
-            end
+                if ~isempty(obj.expr)
+                    s = obj.expr.toString;
+                else
+                    s = obj.name;
+                end
+                obj.cache.insertOrUpdate('String', s);
+            end            
         end
         
         function out = eq(a,b)
@@ -437,6 +449,14 @@ classdef Expression < handle
                         end
                     end
                 end
+            end
+        end
+        
+        function out = isempty(obj)
+            out = 0;
+            
+            if length(obj) == 0
+                out = 1;
             end
         end
         
@@ -616,11 +636,21 @@ classdef Expression < handle
         end
         
         function jac = jacobian(obj, var)
+            
             jac = imf.Expression.empty(length(obj), 0);
+            n = length(var);
             for i = 1:length(obj)
+                
+                if obj(i).cache.contains('jacobian')
+                    jac(i,1:n) = obj(i).cache.get('jacobian');
+                    continue;
+                end
+                
                 for j = 1:length(var)
                     jac(i,j) = imf.Expression(jacobian(obj(i).getExpression, var(j).getExpression));
                 end
+                
+                obj(i).cache.insertOrUpdate('jacobian', jac(i,:));
             end
         end
         
@@ -669,7 +699,7 @@ classdef Expression < handle
             for i = 1:length(obj)
                 tmp{i} = obj(i).expr.toString;
                 
-                for j = 1:length(IMF_.helper.x)                    
+                for j = 1:length(IMF_.helper.x)
                     tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(ddot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' IMF_.helper.x{j}.name '(t), t, t)']);
                     tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(dot\(' IMF_.helper.x{j}.name '\))(?!(?:[a-zA-Z0-9]+))'], ['diff(imf_q' IMF_.helper.x{j}.name '(t), t)']);
                     tmp{i} = regexprep(tmp{i}, ['(?<!(?:[a-zA-Z0-9\_]))(' IMF_.helper.x{j}.name ')(?!(?:[a-zA-Z0-9]+))'], ['imf_q' IMF_.helper.x{j}.name]);
@@ -740,30 +770,6 @@ classdef Expression < handle
             if size(obj, 1) > size(obj, 2)
                 out = out';
             end
-        end
-        
-        function matlabFunction(obj, filename)
-            
-            [eqs, vars, params] = obj.symbolic;
-            [newEqs, newVars] = reduceDifferentialOrder(eqs, vars);
-            newEqs = simplify(newEqs);
-            [M, F] = massMatrixForm(newEqs, newVars);
-            odeFunction(M, newVars, params, 'File', [filename 'M']);
-            odeFunction(F, newVars, params, 'File', [filename 'F']);
-            
-            disp('======================== DONE =========================')
-            disp('Generation for MATLAB function completed.')
-            disp(['Two functions have been created: @' [filename 'M'] '(t,q,params) and @' [filename 'F'] '(t,q,params).'])
-            disp('The states are:')
-            for i=1:length(newVars)
-                disp(['  Parameter ' num2str(i) ': ' regexprep(char(newVars(i)), '(imf\_.)', '')]);
-            end
-            disp('The function parameters are:')
-            for i=1:length(params)
-                disp(['  Parameter ' num2str(i) ': ' regexprep(char(params(i)), '(imf\_.)', '')]);
-            end
-            disp('=======================================================')
-            
         end
     end
     

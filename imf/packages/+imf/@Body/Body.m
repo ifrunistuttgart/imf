@@ -32,9 +32,15 @@ classdef Body < handle
         angularVelocity@imf.AngularVelocity
     end
     
+    properties(GetAccess = 'private')
+        cache@imf.Cache;
+    end
+    
     methods
         
         function obj = Body(name, mass, positionVector, inertia, angularVector)
+            
+            obj.cache = imf.Cache();
             
             if ischar(name) && ~isempty(mass)
                 obj.name = name;
@@ -90,6 +96,21 @@ classdef Body < handle
             end
         end
         
+        function out = rotationalJacobian(obj)            
+            out = obj.angularVelocity.Jacobian;
+        end
+        
+        function out = translationalJacobian(obj)
+            out = obj.positionVector.Jacobian;
+        end
+        
+        function out = rotationalAcceleration(obj)
+            out = obj.angularVelocity.Acceleration;
+        end
+        
+        function out = translationalAcceleration(obj)
+            out = obj.positionVector.Acceleration;
+        end
     end
     
 end
